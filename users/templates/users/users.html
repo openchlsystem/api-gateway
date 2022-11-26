@@ -1,0 +1,268 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% load i18n %}
+{% block content %}
+    <!-- Row -->
+    <div class="row">
+        <div class="col-sm-7">
+            <div class="panel panel-default card-view">
+                <div class="panel-heading">
+                    <div class="pull-left">
+                        <h6 class="panel-title txt-dark">Users Table</h6>
+                    </div>
+                    <span class="pull-right"><button type="button" data-toggle="modal" data-target=".bs-example-modal-lg" class="btn btn-primary btn-sm">New User</button></span>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="panel-wrapper collapse in">
+                    <div class="panel-body">
+                        <div class="table-wrap">
+                            <div class="table-responsive">
+                                <table id="datable_1" class="table table-hover display  pb-30" >
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Username</th>
+                                            <th>Email</th>
+                                            <!-- <th>Service</th> -->
+                                            <th>User Type</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Username</th>
+                                            <th>Email</th>
+                                            <!-- <th>Service</th> -->
+                                            <th>User Type</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </tfoot>
+                                    <tbody>
+                                        {% for usr in users %}
+                                        <tr>
+                                            <td>{{forloop.counter }}.</td>
+                                            <td>{{usr.username }}</td>
+                                            <td>{{usr.email}}</td>
+                                            <!-- <td>{{usr.service }}</td> -->
+                                            <td>{{usr.role.role_name }}</td>
+                                            <td>{% if usr.is_active %} Active {% else %} Inactive {% endif %}</td>
+                                            <td class="text-center">
+                                                <button class="btn btn-warning btn-icon-anim btn-circle" title="Edit" data-toggle="modal" data-target=".bs-view-user-lg" data-action="edit" data-userid="{{usr.id}}"><i class="icon-pencil"></i></button>
+                                                <button class="btn btn-primary btn-icon-anim btn-circle" title="View"><a href="{% url 'viewuser' usr.id %}"><i class="icon-eye"></i></a></button>
+                                                <button class="btn btn-success btn-icon-anim btn-circle text-light resetpassword" title="Reset Password" data-usrid="{{usr.id}}" data-usr="{{usr.username}}"><a href="javascript:void(0)" class=" text-light"><i class="zmdi zmdi-refresh"></i></a></button>
+                                                <button class="btn btn-danger btn-icon-anim btn-circle disableuser {% if not usr.is_active %}hidden{% endif %}" title="Disable" data-usrid="{{usr.id}}" data-action="disable" data-usr="{{usr.username}}"><i class="icon-action-undo"></i></button>
+                                                <button class="btn btn-success btn-icon-anim btn-circle enableuser {% if usr.is_active %}hidden{% endif %}" title="Enable" data-usrid="{{usr.id}}" data-action="enable" data-usr="{{usr.username}}"><i class="icon-action-redo"></i></button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <div class="panel panel-default card-view">
+                <div class="panel-heading">
+                    <div class="pull-left">
+                        <h6 class="panel-title txt-dark">User Queue Functions</h6>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="panel-wrapper collapse in">
+                    <div class="panel-body">
+                        <div class="table-wrap">
+                            <div class="table-responsive">
+                                <table id="datable_2" class="table table-hover display  pb-30" >
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Username</th>
+                                            <th>Last Extension</th>
+                                            <th>Status</th>
+                                            <!-- <th>Action</th> -->
+                                        </tr>
+                                    </thead>
+                                    <tfoot>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Username</th>
+                                            <th>Last Extension</th>
+                                            <th>Status</th>
+                                            <!-- <th>Action</th> -->
+                                        </tr>
+                                    </tfoot>
+                                    <tbody>
+                                        {% for usr in logged %}
+                                        <tr>
+                                            <td>{{forloop.counter }}.</td>
+                                            <td>{{usr.username }}</td>
+                                            <td>{{usr.endpoint.id }}</td>
+                                            <td>{{ usr.endpoint.ep_status }}</td>
+                                            <!-- <td class="text-center">
+                                                <button class="btn btn-warning btn-icon-anim btn-circle" title="Edit"  data-toggle="modal"><i class="icon-ear"></i></button>
+                                                <button class="btn btn-primary btn-icon-anim btn-circle" title="View"><a href="{% url 'viewuser' usr.id %}"><i class="fa fa-replay"></i></a></button>
+                                                <!-- <button class="btn btn-danger btn-icon-anim btn-circle" title="Delete"><i class="icon-trash"></i></button> ->
+                                            </td> -->
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- sample modal content -->
+    <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog modal-lg col-md-offset-3">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h5 class="modal-title" id="myLargeModalLabel">Create New User</h5>
+                </div>
+                <div class="modal-body">
+                    
+                    <div class="row">
+                        <div class="col-sm-12 col-xs-12">
+                            <div class="form-wrap">
+                                
+                                <form method="POST" action="">
+                                    <div class="row">
+                                    {% csrf_token %}
+                                    <div class="form-group col-md-6">
+                                        <label class="control-label mb-10" for="id_firstname">{% translate "First Name" %} </label>
+                                        <div class="input-group">
+                                            <div class="input-group-addon"><i class="icon-user"></i></div>
+                                            <input type="text" class="form-control" id="id_firstname" name="firstname" placeholder="{% translate 'Enter First Name' %}" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label class="control-label mb-10" for="id_lastname">{% translate "Last Name" %}</label>
+                                        <div class="input-group">
+                                            <div class="input-group-addon"><i class="icon-user"></i></div>
+                                            <input type="text" class="form-control" id="id_lastname" name="lastname" placeholder="{% translate 'Enter Last Name' %}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label class="control-label mb-10" for="id_username">{% translate "Username" %}</label>
+                                        <div class="input-group">
+                                            <div class="input-group-addon"><i class="icon-user"></i></div>
+                                            <input type="text" class="form-control" id="id_username" name="username" placeholder="Username" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label class="control-label mb-10" for="id_email">{% translate "Email address" %}</label>
+                                        <div class="input-group">
+                                            <div class="input-group-addon"><i class="icon-envelope-open"></i></div>
+                                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label class="control-label mb-10" for="id_role">{% translate "Role" %}</label>
+                                        <div class="input-group">
+                                            <div class="input-group-addon"><i class="icon-lock"></i></div>
+                                            <select class="form-control" id="id_role" name="role" required>
+                                                <option value="">-- {% translate "Select Role" %} --</option>
+                                                {% for role in roles %}
+                                                <option value="{{role.id}}">{{role.role_name}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label class="control-label mb-10" for="id_address">{% translate "Freshdesk API Key" %}</label>
+                                        <div class="input-group">
+                                            <div class="input-group-addon"><i class="icon-lock"></i></div>
+                                            <input type="text" class="form-control" id="service_key" name="service_key" placeholder="{% translate 'Freshdesk API Key' %}">
+                                        </div>
+                                    </div>
+                                    <!-- <div class="form-group col-md-6">
+                                        <label class="control-label mb-10" for="id_role">{% translate "Services" %}</label>
+                                        <div class="input-group">
+                                            <div class="input-group-addon"><i class="icon-lock"></i></div>
+                                            <select class="form-control" name="servicerole" required>
+                                                <option value="">--Select Service--</option>
+                                                <option value="1">Police Services</option>
+                                                <option value="2">Immigration</option>
+                                                <option value="3">NPPA</option>
+                                                <option value="4">Other Services</option>
+                                            </select>
+                                        </div>
+                                    </div> -->
+                                    <!-- <div class="form-group col-md-6">
+                                        <label class="control-label mb-10" for="id_address">{% translate "Address" %}</label>
+                                        <div class="input-group">
+                                            <div class="input-group-addon"><i class="icon-lock"></i></div>
+                                            <input type="text" class="form-control" id="id_address" name="address" placeholder="{% translate 'Enter Address' %}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label class="control-label mb-10" for="id_location">{% translate "Location" %}</label>
+                                        <div class="input-group">
+                                            <div class="input-group-addon"><i class="icon-lock"></i></div>
+                                            <input type="text" class="form-control" id="id_location" name="location" placeholder="Enter email">
+                                        </div>
+                                    </div> -->
+                                </div>
+                                    <button type="submit" class="btn btn-success mr-10">Submit</button>
+                                    <button type="reset" class="btn btn-default">Cancel</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- <div class="modal-footer">
+                    <button type="button" class="btn btn-danger text-left" data-dismiss="modal">Close</button>
+                </div> -->
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
+    <div class="modal fade bs-view-user-lg" role="dialog" data-backdrop="static" aria-labelledby="myLargeModalLabel" aria-hidden="true" style="display: none;">
+        <div class="col-md-8 col-sm-8 col-md-offset-2 modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h5 class="modal-title" id="myLargeModalLabel">Edit User</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12 col-xs-12">
+                            <div class="form-wrap">
+                                
+                                <form method="POST" id="edituser" action="">
+                                    
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
+{% endblock content %}
+{% block scripts %}
+{% include 'main/common/datatables.html' %}
+<script>
+    $('.bs-view-user-lg').on('show.bs.modal', function (e) {
+        var r = e.relatedTarget
+        $('#edituser').html('Locading..')
+        $('#edituser').load('/users/' + $(r).data('userid') + '/' + $(r).data('action') + '/')
+    })
+</script>
+{% endblock scripts %}

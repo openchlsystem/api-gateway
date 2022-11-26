@@ -1,0 +1,83 @@
+
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+                <div class="row">
+                {% csrf_token %}
+                <input type="hidden" name="userid" id="edituserid" value="{{user.id}}" />
+                <div class="form-group col-md-6">
+                    <label class="control-label mb-10" for="id_firstname">{% translate "First Name" %} </label>
+                    <div class="input-group">
+                        <div class="input-group-addon"><i class="icon-user"></i></div>
+                        <input type="text" class="form-control" id="id_firstname" name="firstname" value="{{user.firstname}}" placeholder="{% translate 'Enter First Name' %}" required>
+                    </div>
+                </div>
+                <div class="form-group col-md-6">
+                    <label class="control-label mb-10" for="id_lastname">{% translate "Last Name" %}</label>
+                    <div class="input-group">
+                        <div class="input-group-addon"><i class="icon-user"></i></div>
+                        <input type="text" class="form-control" id="id_lastname" name="lastname"  value="{{user.lastname}}" placeholder="{% translate 'Enter Last Name' %}">
+                    </div>
+                </div>
+                <div class="form-group col-md-6">
+                    <label class="control-label mb-10" for="id_username">{% translate "Username" %}</label>
+                    <div class="input-group">
+                        <div class="input-group-addon"><i class="icon-user"></i></div>
+                        <input type="text" class="form-control" id="id_username" name="username" value="{{user.firstname}}"  placeholder="Username" required>
+                    </div>
+                </div>
+                <div class="form-group col-md-6">
+                    <label class="control-label mb-10" for="id_email">{% translate "Email address" %}</label>
+                    <div class="input-group">
+                        <div class="input-group-addon"><i class="icon-envelope-open"></i></div>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Enter email"  value="{{user.email}}" required>
+                    </div>
+                </div>
+                <div class="form-group col-md-6">
+                    <label class="control-label mb-10" for="id_role">{% translate "Role" %}</label>
+                    <div class="input-group">
+                        <div class="input-group-addon"><i class="icon-lock"></i></div>
+                        <select class="form-control" id="id_role" name="role" required>
+                            <option value="">-- {% translate "Select Role" %} --</option>
+                            {% for role in roles %}
+                            <option value="{{role.id}}" {% if user.role.id == role.id %} selected {% endif %}>{{role.role_name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group col-md-6">
+                    <label class="control-label mb-10" for="id_address">{% translate "Freshdesk API Key" %}</label>
+                    <div class="input-group">
+                        <div class="input-group-addon"><i class="icon-lock"></i></div>
+                        <input type="text" value="{{user.fresh_api}}" class="form-control" id="service_key" name="service_key" placeholder="{% translate 'Freshdesk API Key' %}">
+                    </div>
+                </div>
+                <!-- <div class="form-group col-md-6">
+                    <label class="control-label mb-10" for="id_role">{% translate "Services" %}</label>
+                    <div class="input-group">
+                        <div class="input-group-addon"><i class="icon-lock"></i></div>
+                        <select class="form-control" name="servicerole" required>
+                            <option value="">--Select Service--</option>
+                            <option {% if user.service == 1 %} selected {% endif %} value="1">Police Services</option>
+                            <option {% if user.service == 2 %} selected {% endif %} value="2">Immigration</option>
+                            <option {% if user.service == 3 %} selected {% endif %} value="3">NPPA</option>
+                            <option {% if user.service == 4 %} selected {% endif %} value="4">Other services</option>
+                        </select>
+                    </div>
+                </div> -->
+                <!-- <div class="form-group col-md-6">
+                    <label class="control-label mb-10" for="id_address">{% translate "Address" %}</label>
+                    <div class="input-group">
+                        <div class="input-group-addon"><i class="icon-lock"></i></div>
+                        <input type="text" class="form-control" id="id_address" name="address" placeholder="{% translate 'Enter Address' %}">
+                    </div>
+                </div>
+                <div class="form-group col-md-6">
+                    <label class="control-label mb-10" for="id_location">{% translate "Location" %}</label>
+                    <div class="input-group">
+                        <div class="input-group-addon"><i class="icon-lock"></i></div>
+                        <input type="text" class="form-control" id="id_location" name="location" placeholder="Enter email">
+                    </div>
+                </div> -->
+            </div>
+            <button type="submit" class="btn btn-success mr-10">Submit</button>
+            <button type="reset" class="btn btn-default">Cancel</button>

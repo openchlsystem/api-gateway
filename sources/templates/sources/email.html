@@ -1,0 +1,401 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block css %}
+<!-- Bootstrap Wysihtml5 css -->
+<link rel="stylesheet" href="{% static 'vendors/bower_components/bootstrap3-wysihtml5-bower/dist/bootstrap3-wysihtml5.css' %}" />
+{% endblock %}  
+{% block content %}   
+				
+				<!-- Row -->
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="panel panel-default card-view pa-0">
+							<div class="panel-wrapper collapse in">
+								<div class="panel-body pa-0">
+									<div class="mail-box">
+										<div class="row">
+											<aside class="col-lg-3 col-md-4 pr-0">
+												<div class="mt-20 mb-20 ml-15 mr-15">
+													<a href="#myModal" data-toggle="modal"  title="Compose"    class="btn btn-danger btn-block">
+													Compose
+													</a>
+													<!-- Modal -->
+													<div aria-hidden="true" role="dialog" tabindex="-1" id="myModal" class="modal fade" style="display: none;">
+														<div class="modal-dialog col-md-8 col-md-offset-2">
+															<div class="modal-content">
+																<div class="modal-header">
+																	<button aria-hidden="true" data-dismiss="modal" class="close" type="button">×</button>
+																	<h4 class="modal-title">Compose</h4>
+																</div>
+																<div class="modal-body">
+																	<form role="form" class="form-horizontal">
+																		<div class="form-group">
+																			<label class="col-lg-2 control-label">To</label>
+																			<div class="col-lg-10">
+																				<input type="text" placeholder="" id="inputEmail1" class="form-control">
+																			</div>
+																		</div>
+																		<div class="form-group">
+																			<label class="col-lg-2 control-label">Cc / Bcc</label>
+																			<div class="col-lg-10">
+																				<input type="text" placeholder="" id="cc" class="form-control">
+																			</div>
+																		</div>
+																		<div class="form-group">
+																			<label class="col-lg-2 control-label">Subject</label>
+																			<div class="col-lg-10">
+																				<input type="text" placeholder="" id="inputPassword1" class="form-control">
+																			</div>
+																		</div>
+																		<div class="form-group">
+																			<label class="col-lg-2 control-label">Message</label>
+																			<div class="col-lg-10">
+																				<textarea class="textarea_editor form-control" rows="15" placeholder="Enter text ..."></textarea>
+																			</div>
+																		</div>
+																		<div class="form-group">
+																			<div class="col-lg-offset-2 col-lg-10">
+																				<div class="fileupload btn btn-info btn-anim mr-10"><i class="fa fa-paperclip"></i><span class="btn-text">attachments</span>
+																					<input type="file" class="upload">
+																				</div>
+																				
+																				<button class="btn btn-success" type="submit">Send</button>
+																			</div>
+																		</div>
+																	</form>
+																</div>
+															</div>
+															<!-- /.modal-content -->
+														</div>
+														<!-- /.modal-dialog -->
+													</div>
+													<!-- /.modal -->
+												</div>
+												<ul class="inbox-nav mb-30">
+													<li class="active">
+														<a href="#"><i class="zmdi zmdi-inbox"></i> Inbox <span class="label label-danger ml-10">2</span></a>
+													</li>
+													<li>
+														<a href="#"><i class="zmdi zmdi-email-open"></i> Sent Mail</a>
+													</li>
+												</ul>
+												
+												<h6 class="pl-15 mb-20">online</h6>
+													<ul class="chat-list-wrap">
+													<li class="chat-list">
+														<div class="chat-body">
+															<!-- <a  href="javascript:void(0)">
+																<div class="chat-data">
+																	<img class="user-img img-circle"  src="../img/user.png" alt="user"/>
+																	<div class="user-data">
+																		<span class="name block capitalize-font">Clay Masse</span>
+																		<span class="time block truncate txt-grey">No one saves us but ourselves.</span>
+																	</div>
+																	<div class="status away"></div>
+																	<div class="clearfix"></div>
+																</div>
+															</a> -->
+															<!-- <a  href="javascript:void(0)">
+																<div class="chat-data">
+																	<img class="user-img img-circle"  src="../img/user1.png" alt="user"/>
+																	<div class="user-data">
+																		<span class="name block capitalize-font">Evie Ono</span>
+																		<span class="time block truncate txt-grey">Unity is strength</span>
+																	</div>
+																	<div class="status offline"></div>
+																	<div class="clearfix"></div>
+																</div>
+															</a> -->
+															<!-- <a  href="javascript:void(0)">
+																<div class="chat-data">
+																	<img class="user-img img-circle"  src="../img/user2.png" alt="user"/>
+																	<div class="user-data">
+																		<span class="name block capitalize-font">Madalyn Rascon</span>
+																		<span class="time block truncate txt-grey">Respect yourself if you would have others respect you.</span>
+																	</div>
+																	<div class="status online"></div>
+																	<div class="clearfix"></div>
+																</div>
+															</a> -->
+															<!-- <a  href="javascript:void(0)">
+																<div class="chat-data">
+																	<img class="user-img img-circle"  src="../img/user3.png" alt="user"/>
+																	<div class="user-data">
+																		<span class="name block capitalize-font">Mitsuko Heid</span>
+																		<span class="time block truncate txt-grey">I’m thankful.</span>
+																	</div>
+																	<div class="status online"></div>
+																	<div class="clearfix"></div>
+																</div>
+															</a> -->
+															<!-- <a  href="javascript:void(0)">
+																<div class="chat-data">
+																	<img class="user-img img-circle"  src="../img/user.png" alt="user"/>
+																	<div class="user-data">
+																		<span class="name block capitalize-font">Ezequiel Merideth</span>
+																		<span class="time block truncate txt-grey">Patience is bitter.</span>
+																	</div>
+																	<div class="status offline"></div>
+																	<div class="clearfix"></div>
+																</div>
+															</a> -->
+														</div>
+													</li>
+												</ul>
+											</aside>
+											
+											<aside class="col-lg-9 col-md-8 pl-0">
+												<div class="panel panel-refresh pa-0">
+													<div class="refresh-container">
+														<div class="la-anim-1"></div>
+													</div>
+													<div class="panel-heading pt-20 pb-20 pl-15 pr-15">
+														<div class="pull-left">
+															<h6 class="panel-title txt-dark">inbox</h6>
+														</div>
+														<div class="pull-right">
+															<form role="search" class="inbox-search inline-block pull-left mr-15">
+																<div class="input-group">
+																	<input name="example-input1-group2" class="form-control" placeholder="Search" type="text">
+																	<span class="input-group-btn">
+																	<button type="button" class="btn  btn-default" data-target="#search_form" data-toggle="collapse" aria-label="Close" aria-expanded="true"><i class="zmdi zmdi-search"></i></button>
+																	</span>
+																</div>
+															</form>
+															<a href="#" class="pull-left inline-block refresh">
+																<i class="zmdi zmdi-replay"></i>
+															</a>
+														</div>
+														<div class="clearfix"></div>
+													</div>
+													<div class="panel-wrapper collapse" id="view-mail">
+														<div class="panel-body inbox-body pa-0">
+															<div class="heading-inbox">
+																<div class="container-fluid">
+																	<div class="pull-left">
+																		<div class="compose-btn">
+																			<a class="btn btn-sm mr-10" href="#" title="Back"><i class="zmdi zmdi-chevron-left" onclick="$('#inbox').addClass('in');$('#view-mail').removeClass('in')"></i></a>
+																		</div>
+																	</div>
+																	<div class="pull-right text-right">
+																		<button class="btn btn-sm mr-10" title="Reply"><i class="zmdi zmdi-replay"></i></button>
+																		<button class="btn btn-sm mr-10" title="Print" type="button" ><i class="zmdi zmdi-print"></i> </button>
+																		<button class="btn btn-sm mr-10" title="Delete"><i class="zmdi zmdi-delete"></i></button>
+																		<div class="inline-block dropdown">
+																			<a class="dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false" role="button"><i class="zmdi zmdi-more"></i></a>
+																			<ul class="dropdown-menu bullet dropdown-menu-right"  role="menu">
+																				<li role="presentation"><a href="javascript:void(0)" role="menuitem"><i class="icon wb-reply" aria-hidden="true"></i>Mark as Unread</a></li>
+																				<li role="presentation"><a href="javascript:void(0)" role="menuitem"><i class="icon wb-share" aria-hidden="true"></i>Mark as Important</a></li>
+																				<li role="presentation"><a href="javascript:void(0)" role="menuitem"><i class="icon wb-trash" aria-hidden="true"></i>Report Spam</a></li>
+																			</ul>
+																		</div>
+										
+																	</div>
+																</div>
+																<hr class="light-grey-hr mt-10 mb-15"/>
+																<div class="container-fluid mb-20">	
+																	<h4 class="weight-500 subject"> Donec vitae leo at sem lobortis porttitor eu consequat risus.</h4>
+																</div>	
+															</div>
+															<div class="sender-info">
+																<div class="container-fluid">
+																	<div class="sender-img-wrap pull-left mr-20">
+																		<img class="sender-img" alt="user" src="{% static '/dist/img/R.png' %}">
+																	</div>
+																	<div class="sender-details   pull-left">
+																		<span class="capitalize-font pr-5 txt-dark block font-15 weight-500 head-font from">John Doe</span>
+																		<span class="block">
+																			to
+																			<span class="to">me</span>
+																		</span>	
+																	</div>	
+																	<div class="pull-right">
+																		<div class="inline-block mr-5">
+																			<span class="inbox-detail-time-1 font-12">10:06 AM</span>
+																			<span class="inbox-detail-time-2 font-12 inline-block">(2 hours ago)</span>
+																		</div>
+																		<div class="inline-block dropdown">
+																			<a class="dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false" role="button"><i class="zmdi   zmdi-more-vert"></i></a>
+																			<ul class="dropdown-menu bullet dropdown-menu-right"  role="menu">
+																				<li role="presentation"><a href="javascript:void(0)" role="menuitem"><i class="icon wb-reply" aria-hidden="true"></i>Reply</a></li>
+																				<li role="presentation"><a href="javascript:void(0)" role="menuitem"><i class="icon wb-share" aria-hidden="true"></i>Forward</a></li>
+																				<li role="presentation"><a href="javascript:void(0)" role="menuitem"><i class="icon wb-trash" aria-hidden="true"></i>Delete</a></li>
+																			</ul>
+																		</div>
+																	</div>
+																	<div class="clearfix"></div>
+																</div>
+															</div>
+															<div class="container-fluid view-mail mt-20 body">
+																<p>Faucibus rutrum. Phasellus sodales vulputate urna, vel accumsan augue egestas ac. Donec vitae leo at sem lobortis porttitor eu consequat risus. Mauris sed congue orci. Donec ultrices faucibus rutrum. Phasellus sodales vulputate urna, vel accumsan augue egestas ac. Donec vitae leo at sem lobortis porttitor eu consequat risus. Mauris sed congue orci. Donec ultrices faucibus rutrum. Phasellus sodales vulputate urna, vel accumsan augue egestas ac. Donec vitae leo at sem lobortis porttitor eu consequat risus. Mauris sed congue orci. </p>
+																<p>Consequat risus. Mauris sed congue orci. Donec ultrices <a href="#">flatlab</a>. Phasellus sodales vulputate urna, vel accumsan augue egestas ac. Donec
+																	<a href="#">vitae leo at sem lobortis porttitor eu consequat risus</a>. Mauris sed congue orci. Donec ultrices faucibus rutrum. Phasellus sodales vulputate urna, vel accumsan augue egestas ac. Donec vitae leo at sem lobortis porttitor eu consequat risus. Mauris sed congue orci. 
+																</p>
+																<p>Modales vulputate urna, vel <a href="#">thevectorlab.net</a>. Donec vitae leo at sem lobortis porttitor eu consequat risus. Mauris sed congue orci. Donec ultrices faucibus rutrum. Phasellus sodales vulputate urna, vel accumsan augue egestas ac. Donec vitae leo at sem lobortis porttitor eu consequat risus. Mauris sed congue orci. </p>
+															</div>
+															<hr class="light-grey-hr mt-20 mb-20"/>
+															<div class="container-fluid attachment-mail mt-40 mb-40">
+																<div class="download-blocks mb-20">
+																	<span class="pr-15"><i class="zmdi zmdi-attachment-alt pr-10"></i>3 attachments</span>
+																	<a href="#"><i class="zmdi zmdi-download pr-10"></i>Download</a>
+																</div>
+																<ul id="files">
+																	<li>
+																		<a href="#" class="atch-thumb">
+																			<div class="attached-img-container" style="background-image:url(dist/img/gallery/equal-size/mock1.jpg)"></div>
+																			<div class="file-name">
+																				Image 1
+																			</div>
+																		</a>
+																	</li>
+																	<li>
+																		<a href="#" class="atch-thumb">
+																			<div class="attached-img-container" style="background-image:url(dist/img/gallery/equal-size/mock2.jpg)"></div>
+																			<div class="file-name">
+																				Image 2
+																			</div>
+																		</a>
+																	</li>
+																	<li>
+																		<a href="#" class="atch-thumb">
+																			<div class="attached-img-container" style="background-image:url(dist/img/gallery/equal-size/mock3.jpg)"></div>
+																			<div class="file-name">
+																				Image 3
+																			</div>
+																		</a>
+																	</li>
+																</ul>
+															</div>
+														</div>
+													</div>
+													<div class="panel-wrapper collapse in" id="inbox">
+														<div class="panel-body inbox-body pa-0">
+															<div class="mail-option pl-15 pr-15">
+																<div class="chk-all">
+																	<div class="checkbox checkbox-default inline-block">
+																		<input type="checkbox" id="checkbox051"/>
+																		<label for="checkbox051"></label>
+																	</div>
+																	<div class="btn-group">
+																		<a data-toggle="dropdown" href="#" class="btn  all" aria-expanded="false">
+																		All
+																		<i class="fa fa-angle-down "></i>
+																		</a>
+																		<ul class="dropdown-menu">
+																			<li><a href="#"> None</a></li>
+																			<li><a href="#"> Read</a></li>
+																			<li><a href="#"> Unread</a></li>
+																		</ul>
+																	</div>
+																	<div class="btn-group">
+																		<a data-toggle="dropdown" href="#" class="btn  blue">
+																		Move to
+																		<i class="fa fa-angle-down "></i>
+																		</a>
+																		<ul class="dropdown-menu">
+																			<li><a href="#">Personal</a></li>
+																			<li><a href="#">Social</a></li>
+																			<li class="divider"></li>
+																			<li><a href="#">Promotional</a></li>
+																			<li class="divider"></li>
+																			<li><a href="#">Updates</a></li>
+																		</ul>
+																	</div>
+																	<div class="btn-group">
+																		<a data-toggle="dropdown" href="#" class="btn  blue" aria-expanded="false">
+																		More
+																		<i class="fa fa-angle-down "></i>
+																		</a>
+																		<ul class="dropdown-menu">
+																			<li><a href="#"><i class="fa fa-pencil"></i> Mark as Read</a></li>
+																			<li><a href="#"><i class="fa fa-ban"></i> Spam</a></li>
+																			<li class="divider"></li>
+																			<li><a href="#"><i class="fa fa-trash-o"></i> Delete</a></li>
+																		</ul>
+																	</div>
+																</div>
+																<ul class="unstyled inbox-pagination">
+																	<li><span>1-10 of 234</span></li>
+																	<li>
+																		<a class="pl-15 pr-15" href="#"><i class="fa fa-angle-left  pagination-left"></i></a>
+																	</li>
+																	<li>
+																		<a  href="#"><i class="fa fa-angle-right pagination-right"></i></a>
+																	</li>
+																</ul>
+															</div>
+															<div class="table-responsive mb-0">
+																<table class="table table-inbox table-hover mb-0">
+																	<tbody>
+																		{% for mail in emails.mails %}
+																		<tr class="unread mail" data-mail="{{mail.ide | safe}}">
+																			<td class="inbox-small-cells">
+																				<div class="checkbox checkbox-default inline-block">
+																					<input type="checkbox" id="checkbox012"/>
+																					<label for="checkbox012"></label>
+																				</div>
+																				<i class="zmdi zmdi-star inline-block font-16"></i>
+																			</td>
+																			<td class="view-message  dont-show">{{mail.from_name}}<span class="label label-warning pull-right">new</span></td>
+																			<td class="view-message "><strong>{{mail.subject | slice:15}}</strong> &nbsp;&nbsp;</td>
+																			<td class="view-message  text-right">
+																				<i class="zmdi zmdi-attachment inline-block mr-15 font-16"></i>
+																				<span  class="time-chat-history inline-block">{{mail.date}}({{mail.date | date}})</span>
+																			</td>
+																		</tr>
+																		{% endfor %}
+																	</tbody>
+																</table>
+															</div>
+														</div>
+													</div>
+												</div>
+											</aside>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+    {% endblock %}
+    {% block scripts %}
+	<!-- wysuhtml5 Plugin JavaScript -->
+	<script src="{% static 'vendors/bower_components/wysihtml5x/dist/wysihtml5x.min.js' %}"></script>
+	
+	<script src="{% static 'vendors/bower_components/bootstrap3-wysihtml5-bower/dist/bootstrap3-wysihtml5.all.js' %}"></script>
+	
+	<!-- Fancy Dropdown JS -->
+	<script src="{% static 'dist/js/dropdown-bootstrap-extended.js' %}"></script>
+	
+	<!-- Bootstrap Wysuhtml5 Init JavaScript -->
+	<script src="{% static 'dist/js/bootstrap-wysuhtml5-data.js' %}"></script>
+	<script>
+		$('.mail').click(function(){
+			var name = $(this).data('mail');
+			var mail = {{emails.mails | safe}}.filter(function(it){ return it.ide==name})[0]
+			$('.body').html(mail.body)
+			$('.to').html(mail.to)
+			$('.from').html(mail.from_name + '<' + mail.from_email + '>')
+			$('.subject').html(mail.subject)
+			$('#view-mail').addClass('in')
+			$('#inbox').removeClass('in')
+
+			if(mail.files.length > 0){
+				mail.files.forEach(function(fl){
+
+					$('#files').append('<li>\
+						<a href="#" class="atch-thumb">\
+							<div class="attached-img-container" style="background-image:url(dist/img/gallery/equal-size/mock1.jpg)"></div>\
+							<div class="file-name">\
+								'+ fl +' \
+								</div>\
+								</a>\
+								</li>')
+				})
+			}
+		})
+
+	</script>
+    {% endblock %}
+	
