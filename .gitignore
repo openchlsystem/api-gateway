@@ -6,11 +6,23 @@ __pycache__/
 # C extensions
 *.so
 
+<<<<<<< HEAD
 # Distribution / packaging
 .Python
 build/
 develop-eggs/
 dist/
+=======
+# call files
+*.call
+
+# Distribution / packaging
+.Python
+build/
+*/migrations/0*
+*/migrations/1*
+develop-eggs/
+>>>>>>> ee4a7d4750501a184fa56c8f71f11f411ea19ed2
 downloads/
 eggs/
 .eggs/
@@ -18,6 +30,12 @@ lib/
 lib64/
 parts/
 sdist/
+<<<<<<< HEAD
+=======
+dist/
+!dist/css/*
+!dist/js/*
+>>>>>>> ee4a7d4750501a184fa56c8f71f11f411ea19ed2
 var/
 wheels/
 pip-wheel-metadata/
@@ -57,7 +75,11 @@ coverage.xml
 
 # Django stuff:
 *.log
+<<<<<<< HEAD
 local_settings.py
+=======
+localsettings.py
+>>>>>>> ee4a7d4750501a184fa56c8f71f11f411ea19ed2
 db.sqlite3
 db.sqlite3-journal
 
@@ -127,3 +149,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+<<<<<<< HEAD
+=======
+
+local_settings.py
+>>>>>>> ee4a7d4750501a184fa56c8f71f11f411ea19ed2
