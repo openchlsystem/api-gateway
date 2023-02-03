@@ -80,7 +80,7 @@ Counselor reply:
 ● The Gateway forwards the message to Rapidpro
 WENI Provides an API endpoint To receive the message as configured on RapidPRO
 
-###Notes
+### Notes
 
 The message contains the conversation_id and pseudo-name of the current counselor handling the conversion.
 
