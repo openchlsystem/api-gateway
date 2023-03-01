@@ -230,6 +230,38 @@ class ChatViewSet(viewsets.ViewSet):
     def create(self, request,sessionid=False):
         posted = request.data
         if sessionid:
+            # send close session to WENI
+            # POST /api/v2/flow_starts.json
+            #     "flow": "f5901b62-ba76-4003-9c62-72fdacc1b7b7",
+            #     "groups": ["f5901b62-ba76-4003-9c62-72fdacc15515"],
+            #     "contacts": ["f5901b62-ba76-4003-9c62-fjjajdsi15553"],
+            #     "urns": ["twitter:sirmixalot", "tel:+12065551212"],
+            #     "params": {"first_name": "Ryan", "last_name": "Lewis"}
+            # }
+            
+            try:
+                chat = Chats.objects.filter(chat_session=sessionid)
+                chat = {
+                    "flow": sessionid,
+                    "groups": ["f5901b62-ba76-4003-9c62-72fdacc15515"],
+                    "contacts": [chat.chat_sender],
+                    "urns": ["tel:" + chat.chat_sender] #,
+                    # "params": {"first_name": "Ryan", "last_name": "Lewis"}
+                }
+
+                headers = {"Authorization":"Token a8f15467cc4fd8febfac3f7694349ec07a789e64"}
+
+                response = requests.post('https://rapidpro.ilhasoft.mobi/api/v2/flow_starts', json=chat,headers=headers)
+                json_response = response.json()
+                # If the response was successful, no Exception will be raised
+                response.raise_for_status()
+            except HTTPError as http_err:
+                print(f'HTTP error occurred: {http_err}')
+            except Exception as err:
+                print(f'Other error occurred: {err}') 
+            else:
+                print('Success!')
+
             return Response({'status':"success"}, status=status.HTTP_200_CREATED)
 
         posted = {
