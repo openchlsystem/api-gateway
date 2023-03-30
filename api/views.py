@@ -89,9 +89,7 @@ class WebViewSet(viewsets.ViewSet):
         return Response(serializer_class.data)
 
     def create(self, request):
-        print("CHERU: %s " % request.data)
         try:
-            print("CHERU")
             serializer = self.serializer_class(data=request.data)
 
             if serializer.is_valid():
@@ -544,9 +542,8 @@ class FacebookViewSet(viewsets.ViewSet):
     def send_message(self,recipient_id, message):
         """Send a response to Facebook"""
         
-        headers = {"access_token":"EAAq50PnynzgBAP6DPk5giqGSJo6TYNPcDlehl2WWGlf2vl0UvUcQiMNntECZBBekL381aGu1POPGUKJWU3hjg30PGFsYO8GFFsZAIewfCFIMD8Rwj61unfzhjIK5FUEeagZAWuGKh9D4oXeaQglZCP9K0fgK6xtLjzNyeXhHrcR8kNJY9hIeZC5mHH4ZBJJamfFrbjrsyrSAZDZD"}
-        
-        fburl = 'https://graph.facebook.com/v2.6/me/messages?access_token=EAAq50PnynzgBAP6DPk5giqGSJo6TYNPcDlehl2WWGlf2vl0UvUcQiMNntECZBBekL381aGu1POPGUKJWU3hjg30PGFsYO8GFFsZAIewfCFIMD8Rwj61unfzhjIK5FUEeagZAWuGKh9D4oXeaQglZCP9K0fgK6xtLjzNyeXhHrcR8kNJY9hIeZC5mHH4ZBJJamfFrbjrsyrSAZDZD&recipient=3412749322156758'
+        headers = {"access_token":settings.FB_TOKEN} 
+        fburl = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s&recipient=3412749322156758' % settings.FB_TOKEN
         
         try:
             chat = {
