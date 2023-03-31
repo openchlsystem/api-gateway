@@ -404,7 +404,243 @@ class ChatViewSet(viewsets.ViewSet):
             print('Success!')
 
 
+
 class FacebookViewSet(viewsets.ViewSet):
+
+    queryset = Facebook.objects.all().order_by('-id')
+    serializer_class = FacebookSerializer
+    
+    def list(self, request, format=None):
+        """
+        Return a list of all sources.
+        """
+        mode = request.GET.get('hub.mode',False)
+        token = request.GET.get('hub.verify_token',False)
+        challenge = request.GET.get('hub.challenge',False)
+
+        if(mode and token):
+            if mode == "subscribe" and token == 'aYyHMLNwmE)Y?-G};x)a2zt6wrl48gayahugfnlBx!Rfh%e&x':
+                return Response(int(challenge),status=200)
+            else:
+                return Response(status=403)
+        else:
+            queryset = Facebook.objects.all().order_by('-id')
+            serializer_class = FacebookSerializer(queryset, many=True)
+
+            return Response(serializer_class.data)
+
+    def create(self, request):
+        if request.data.get('object') == 'page':
+            posted = request.data.get('entry')[0].get('messaging')[0]
+            response_message = "NO ACTION"
+
+            if(posted.get('message',False)):
+                message = posted.get('message')
+
+                if not message.get('is_echo',False): # and message.get('text'):
+                    recipient = posted.get('sender').get('id')
+                    if (message.get('quick_reply',False)):
+                        qreply = message.get('quick_reply')
+                        response_message = self.handlePayload(qreply.get('payload'))
+                        self.send_message(recipient,response_message)
+                    elif (message.get('attachments',False)):
+                        response_message = self.handleAttachmentMessage()
+                    elif (message.get('text',False)):
+                        response_message = self.saveItem(request.data,posted)
+                        # chat_data = {
+
+                        # }
+                        # if(request.META.get('HTTP_REFERER') == 'facebook.com'):
+                        #     send_to_helpline(message)
+                        # else:
+
+                        # message = {"text":"Ninafurahi kukukaribisha, naitwa  #Malezi. Mimi ni roboti  ya @SemaTanzania. Kwanza kabisa naomba tufahamiane. Kama hutojali nitakuuliza maswali mawiliili kuweza kukufahamu nakusaidia kuboresha huduma zetu."}
+                        
+                        # self.send_message(recipient, message)
+                        # response_message = self.handlePayload()
+                        # self.send_message(recipient, response_message)
+                        # self.send_to_helpline()
+            
+            elif (posted.get('postback',False)):
+                response_message = self.handlePostback()
+            elif (posted.get('referral',False)):
+                response_message = self.handleReferral()
+            elif (posted.get('optin',False)):
+                response_message = self.handleOptIn()
+            elif (posted.get('pass_thread_control',False)):
+                response_message = self.handlePassThreadControlHandover()
+
+            return  Response(response_message, status=status.HTTP_200_OK)
+                
+        return Response({'status': 'Bad Request %s ' % request.data,
+                         'message': "Could not process request"},
+                          status=status.HTTP_400_BAD_REQUEST)
+    def handleTextMessage(self,data,message):
+        ret = self.saveItem(data,message)
+    def saveItem(self,data,posted):
+        
+            post = {
+                "fb_unique":posted.get('message').get('mid'),
+                "fb_message":posted.get('message').get('text'),
+                "fb_dump":data,
+                "fb_from":posted.get('sender').get('id'),
+                "fb_to":posted.get('recipient').get('id')
+            }
+
+            serializer = self.serializer_class(data=post)
+
+            if serializer.is_valid():
+                fb = Facebook.objects.create(**serializer.validated_data)
+                
+                self.send_to_helpline(fb)
+                # res = self.send_to_facebook(posted)
+                return True #  Response("Success", status=status.HTTP_200_OK)# Response(serializer.validated_data, status=status.HTTP_200_OK) #1_CREATED)
+            else:
+                return False
+
+    def send_message(self,recipient_id, message):
+        """Send a response to Facebook"""
+        
+        headers = {"access_token":settings.FB_TOKEN} 
+        fburl = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s&recipient=3412749322156758' % settings.FB_TOKEN
+        
+        try:
+            chat = {
+                "recipient":{
+                    "id":recipient_id
+                },
+                "messaging_type": "RESPONSE",
+                "message":message
+                }
+            print("DATA: %s " % chat)
+            response = requests.post(fburl, json=chat,headers=headers)
+            json_response = response.json()
+            # If the response was successful, no Exception will be raised
+            response.raise_for_status()
+        except HTTPError as http_err:
+            print(f'HTTP error occurred: {http_err}')
+        except Exception as err:
+            print(f'Other error occurred: {err}') 
+        else:
+            print('Success!')
+        return response.json()
+
+
+    # SEND TO HELPLINE
+    def send_to_helpline(self,chat_data):
+        # send chat to helpline
+        token = False
+        try:
+
+            headers = {
+                "authorization":"Basic %s" % settings.HELPLINE_TOKEN,
+                "accept": "*/*"
+                }
+
+            response = requests.post(settings.HELPLINE_BASE,headers=headers,verify=False)
+            json_response = response.json()
+            token = json_response["ss"][0][0]
+
+            # If the response was successful, no Exception will be raised
+            response.raise_for_status()
+        except HTTPError as http_err:
+            print(f'HTTP token error: {http_err}')
+        except Exception as err:
+            print(f'Other token error occurred: {err}') 
+        else:
+            print('Token Success!')
+
+        if token:
+            try:
+                
+                tm = time.mktime(datetime.now().timetuple())
+                chat = {
+                    "channel":"chat",
+                    "from":chat_data.fb_from,
+                    "message":chat_data.fb_message,
+                    "timestamp":tm,
+                    "session_id":tm,
+                    "message_id":chat_data.id,
+                    "gateway_msg_id":4342
+                }
+
+                headers = {"Authorization":"Bearer %s" % token,'Content-Type':'application/json' }
+
+                response = requests.post('%smsg/' % settings.HELPLINE_BASE, json=chat,headers=headers,verify=False)
+                json_response = response.json()
+                print("CHAT: %s:%s" %(response.status_code,json_response))
+                # If the response was successful, no Exception will be raised
+                response.raise_for_status()
+            except HTTPError as http_err:
+                print(f'HTTP helpline chat error occurred: {http_err}')
+            except Exception as err:
+                print(f'Other helpline chat error occurred: {err}') 
+            else:
+                print('Success!')
+    
+    def send_to_facebook(self,chat_data):
+        try:
+            
+            headers = {"access_token":"EAAq50PnynzgBAP6DPk5giqGSJo6TYNPcDlehl2WWGlf2vl0UvUcQiMNntECZBBekL381aGu1POPGUKJWU3hjg30PGFsYO8GFFsZAIewfCFIMD8Rwj61unfzhjIK5FUEeagZAWuGKh9D4oXeaQglZCP9K0fgK6xtLjzNyeXhHrcR8kNJY9hIeZC5mHH4ZBJJamfFrbjrsyrSAZDZD"}
+            
+            fburl = 'https://graph.facebook.com/v2.6/me/messages?access_token=EAAq50PnynzgBAP6DPk5giqGSJo6TYNPcDlehl2WWGlf2vl0UvUcQiMNntECZBBekL381aGu1POPGUKJWU3hjg30PGFsYO8GFFsZAIewfCFIMD8Rwj61unfzhjIK5FUEeagZAWuGKh9D4oXeaQglZCP9K0fgK6xtLjzNyeXhHrcR8kNJY9hIeZC5mHH4ZBJJamfFrbjrsyrSAZDZD&recipient=3412749322156758'
+            
+            if chat_data.get('message',False) and not chat_data.get('is_echo',False):
+                message = chat_data.get('message') 
+                if(message.get('quick_reply',False)):
+                    message = self.getResponse(message.get('quick_reply').get('payload'))
+                    # message = self.getResponse(pl)
+                else:   
+                    chat = {
+                        "recipient": {
+                        "id":chat_data.get('sender').get('id'), # "3412749322156758"
+                        },
+                        "message": {"text":"Ninafurahi kukukaribisha, naitwa  #Malezi. Mimi ni roboti  ya @SemaTanzania. Kwanza kabisa naomba tufahamiane. Kama hutojali nitakuuliza maswali mawiliili kuweza kukufahamu nakusaidia kuboresha huduma zetu."}
+                    }
+                    response = requests.post(fburl, json=chat,headers=headers)
+                    message = {
+                                "text":"Tafadhali chagua namba inayokutambulisha vyema zaidi:\n Je, jinsia yako ni: -", 
+                                "quick_replies":[{
+                                    "content_type":"text",
+                                    "title":"01: Mwanamke",
+                                    "payload":"MWANAMKE"
+                                },{
+                                    "content_type":"text",
+                                    "title":"02: Mwanamme",
+                                    "payload":"MWANAMKE"
+                                },{
+                                    "content_type":"text",
+                                    "title":"03 Naomba nisijubu swali hili",
+                                    "payload":"MWANAMKE"
+                                }
+                                ]
+                            }
+            else:
+                message = {"text":"2:Ninafurahi kukukaribisha, naitwa  #Malezi. Mimi ni roboti  ya @SemaTanzania. Kwanza kabisa naomba tufahamiane. Kama hutojali nitakuuliza maswali mawiliili kuweza kukufahamu nakusaidia kuboresha huduma zetu."}
+            
+            chat = {
+                "recipient":{
+                    "id":chat_data.get('sender').get('id')
+                },
+                # "messaging_type": "RESPONSE",
+                "message":message
+                }
+                
+            response = requests.post(fburl, json=chat,headers=headers)
+            json_response = response.json()
+            print("THE MESSAGE: %s " % json_response)
+            # If the response was successful, no Exception will be raised
+            response.raise_for_status()
+        except HTTPError as http_err:
+            print(f'HTTP error occurred: {http_err}')
+        except Exception as err:
+            print(f'Other error occurred: {err}') 
+        else:
+            print('Success!')
+
+        return chat
+
+class FacebookViewSetBot(viewsets.ViewSet):
 
     queryset = Facebook.objects.all().order_by('-id')
     serializer_class = FacebookSerializer
