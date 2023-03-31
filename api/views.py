@@ -539,20 +539,27 @@ class FacebookViewSet(viewsets.ViewSet):
 
             response = requests.post(settings.HELPLINE_BASE,headers=headers,verify=False)
             json_response = response.json()
+
+            # if it failed to get token, return
+            if json_response.get('errors',False):
+                return "Helpline chat token error: %s " % json_response
+            
             token = json_response["ss"][0][0]
 
             # If the response was successful, no Exception will be raised
             response.raise_for_status()
         except HTTPError as http_err:
-            print(f'HTTP token error: {http_err}')
+            # print(f'HTTP token error: {http_err}')
+            return f'HTTP token error: {http_err}'
         except Exception as err:
-            print(f'Other token error occurred: {err}') 
+            # print(f'Other token error occurred: {err}') 
+            return f'Other token error occurred: {err}'
         else:
-            print('Token Success!')
+            print('Token Success! %s ' % token)
 
         if token:
+            print("TOKEN: %s " % token)
             try:
-                
                 tm = time.mktime(datetime.now().timetuple())
                 chat = {
                     "channel":"chat",
@@ -560,24 +567,32 @@ class FacebookViewSet(viewsets.ViewSet):
                     "message":chat_data.fb_message,
                     "timestamp":tm,
                     "session_id":tm,
-                    "message_id":chat_data.id,
-                    "gateway_msg_id":4342
+                    "message_id":chat_data.id
                 }
 
                 headers = {"Authorization":"Bearer %s" % token,'Content-Type':'application/json' }
 
                 response = requests.post('%smsg/' % settings.HELPLINE_BASE, json=chat,headers=headers,verify=False)
                 json_response = response.json()
-                print("CHAT: %s:%s" %(response.status_code,json_response))
+                
+                
+                # if it failed to create chat, return
+                if json_response.get('errors',False):
+                    return "Helpline chat error: %s " % json_response
+                
                 # If the response was successful, no Exception will be raised
                 response.raise_for_status()
             except HTTPError as http_err:
-                print(f'HTTP helpline chat error occurred: {http_err}')
+                # print(f'HTTP helpline chat error occurred: {http_err}')
+                return f'HTTP helpline chat error occurred: {http_err}'
             except Exception as err:
-                print(f'Other helpline chat error occurred: {err}') 
+                # print(f'Other helpline chat error occurred: {err}') 
+                return f'Other helpline chat error occurred: {err}'
             else:
-                print('Success!')
-    
+                # print('Success!')
+                return 'Chat Success'
+        else:
+            print("No TOKEN")
     def send_to_facebook(self,chat_data):
         try:
             
