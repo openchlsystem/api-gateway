@@ -574,22 +574,22 @@ class FacebookViewSet(viewsets.ViewSet):
 
                 response = requests.post('%smsg/' % settings.HELPLINE_BASE, json=chat,headers=headers,verify=False)
                 json_response = response.json()
-                
-                
+                print("Helpline chat error: %s " % json_response)
                 # if it failed to create chat, return
                 if json_response.get('errors',False):
+                    print("Helpline chat error: %s " % json_response)
                     return "Helpline chat error: %s " % json_response
                 
                 # If the response was successful, no Exception will be raised
                 response.raise_for_status()
             except HTTPError as http_err:
-                # print(f'HTTP helpline chat error occurred: {http_err}')
+                print(f'HTTP helpline chat error occurred: {http_err}')
                 return f'HTTP helpline chat error occurred: {http_err}'
             except Exception as err:
-                # print(f'Other helpline chat error occurred: {err}') 
+                print(f'Other helpline chat error occurred: {err}') 
                 return f'Other helpline chat error occurred: {err}'
             else:
-                # print('Success!')
+                print('Success!')
                 return 'Chat Success'
         else:
             print("No TOKEN")
