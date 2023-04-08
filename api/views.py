@@ -431,8 +431,7 @@ class WhatsAppViewSet(viewsets.ViewSet):
     def create(self, request):
         if request.data.get('object') == 'whatsapp_business_account':
             
-            posted = request.data.get('entry')[0].get('changes')[0]
-            messageid = request.data.get('entry')[0].get('id')
+            posted = request.data.get('entry')[0].get('changes')[0].get('value')
 
             if(posted.get('field',False)):
                 message_type = posted.get('messages').get('type')
