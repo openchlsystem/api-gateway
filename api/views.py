@@ -432,8 +432,9 @@ class WhatsAppViewSet(viewsets.ViewSet):
         if request.data.get('object') == 'whatsapp_business_account':
             
             posted = request.data.get('entry')[0].get('changes')[0].get('value')
+            field = request.data.get('entry')[0].get('changes')[0].get('field',False)
             response_message = "Invalid Request"
-            if(posted.get('field',False)):
+            if(field):
                 message_type = posted.get('messages').get('type')
                 
                 # self.saveItem(posted,)
@@ -452,6 +453,7 @@ class WhatsAppViewSet(viewsets.ViewSet):
     def handleTextMessage(self,data,message):
         ret = self.saveItem(data,message)
     def saveItem(self,data):
+            print("CALLING SAVE ITEM: %s " % data.get('entry')[0].get('changes')[0].get('value'))
             try:
                 posted = data.get('entry')[0].get('changes')[0].get('value')
                 post = {
