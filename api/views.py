@@ -435,7 +435,7 @@ class WhatsAppViewSet(viewsets.ViewSet):
             field = request.data.get('entry')[0].get('changes')[0].get('field',False)
             response_message = "Invalid Request"
             if(field):
-                message_type = posted.get('messages').get('type')
+                message_type = posted.get('messages')[0].get('type')
                 
                 # self.saveItem(posted,)
                 if(message_type == 'text'):
@@ -458,10 +458,10 @@ class WhatsAppViewSet(viewsets.ViewSet):
                 posted = data.get('entry')[0].get('changes')[0].get('value')
                 post = {
                     "wa_unique":data.get('entry')[0].get('id'),
-                    "wa_message":posted.get('messages').get('text').get('body'),
+                    "wa_message":posted.get('messages')[0].get('text').get('body'),
                     "wa_dump":data,
-                    "wa_from":posted.get('messages').get('from'),
-                    "wa_to":posted.get('contacts').get('profile').get('name'),
+                    "wa_from":posted.get('messages')[0].get('from'),
+                    "wa_to":posted.get('contacts')[0].get('profile').get('name'),
                 }
                 print("THE DATA: %s " % post)
                 serializer = self.serializer_class(data=post)
@@ -525,14 +525,14 @@ class WhatsAppViewSet(viewsets.ViewSet):
                 return "Helpline chat token error: %s " % json_response
             
             token = json_response["ss"][0][0]
-
+            print("TOKEN: %s " % token)
             # If the response was successful, no Exception will be raised
             response.raise_for_status()
         except HTTPError as http_err:
-            # print(f'HTTP token error: {http_err}')
+            print(f'HTTP token error: {http_err}')
             return f'HTTP token error: {http_err}'
         except Exception as err:
-            # print(f'Other token error occurred: {err}') 
+            print(f'Other token error occurred: {err}') 
             return f'Other token error occurred: {err}'
         else:
             print('Token Success! %s ' % token)
