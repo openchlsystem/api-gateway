@@ -5,10 +5,11 @@ from django.contrib.auth.models import Group
 from django.http import JsonResponse
 from rest_framework import viewsets,status
 from users.models import User
-from sources.models import Chats,Facebook, Web, Twitter
+from sources.models import Chats,Facebook, Web, Twitter,WhatsApp
 from rest_framework import permissions
 from rest_framework.response import Response
-from api.serializers import UserSerializer, GroupSerializer, ChatSerializer, FacebookSerializer, TwitterSerializer, WebSerializer
+from api.serializers import UserSerializer, GroupSerializer, ChatSerializer, FacebookSerializer, \
+    TwitterSerializer, WebSerializer,WhatsAppSerializer
 import uuid
 import requests,time,ssl
 from datetime import datetime
@@ -403,6 +404,170 @@ class ChatViewSet(viewsets.ViewSet):
         else:
             print('Success!')
 
+class WhatsAppViewSet(viewsets.ViewSet):
+
+    queryset = WhatsApp.objects.all().order_by('-id')
+    serializer_class = WhatsAppSerializer
+    
+    def list(self, request, format=None):
+        """
+        Return a list of all sources.
+        """
+        mode = request.GET.get('hub.mode',False)
+        token = request.GET.get('hub.verify_token',False)
+        challenge = request.GET.get('hub.challenge',False)
+
+        if(mode and token):
+            if mode == "subscribe" and token == 'aYyHMLNwmE)Y?-G};x)a2zt6wrl48gayahugfnlBx!Rfh%e&x':
+                return Response(int(challenge),status=200)
+            else:
+                return Response(status=403)
+        else:
+            queryset = WhatsApp.objects.all().order_by('-id')
+            serializer_class = WhatsAppSerializer(queryset, many=True)
+
+            return Response(serializer_class.data)
+
+    def create(self, request):
+        if request.data.get('object') == 'whatsapp_business_account':
+            
+            posted = request.data.get('entry')[0].get('changes')[0]
+            messageid = request.data.get('entry')[0].get('id')
+
+            if(posted.get('field',False)):
+                message_type = posted.get('messages').get('type')
+                
+                self.saveItem(posted,)
+                if(message_type == 'text'):
+                    response_message = self.saveItem(request.data)
+                elif(message_type == 'image' or message_type == 'document'):
+                    response_message = self.handleAttachmentMessage()
+
+            return  Response(response_message, status=status.HTTP_200_OK)
+                
+        return Response({'status': 'Bad Request %s ' % request.data,
+                         'message': "Could not process request"},
+                          status=status.HTTP_400_BAD_REQUEST)
+    def handleTextMessage(self,data,message):
+        ret = self.saveItem(data,message)
+    def saveItem(self,data):
+            try:
+                posted = data.get('entry')[0].get('changes')[0].get('value')
+                post = {
+                    "wa_unique":data.get('entry')[0].get('id'),
+                    "wa_message":posted.get('messages').get('text').get('body'),
+                    "wa_dump":data,
+                    "wa_from":posted.get('messages').get('from'),
+                    "wa_to":posted.get('contacts').get('profile').get('name'),
+                }
+
+                serializer = self.serializer_class(data=post)
+
+                if serializer.is_valid():
+                    fb = WhatsApp.objects.create(**serializer.validated_data)
+                    
+                    self.send_to_helpline(fb)
+                    # res = self.send_to_facebook(posted)
+                    return "Success" #  Response("Success", status=status.HTTP_200_OK)# Response(serializer.validated_data, status=status.HTTP_200_OK) #1_CREATED)
+                else:
+                    return False
+            except Exception as e:
+                return "Error: %s " % e.args[0]
+
+    def send_message(self,recipient_id, message):
+        """Send a response to Facebook"""
+        
+        headers = {"access_token":settings.FB_TOKEN} 
+        fburl = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s&recipient=3412749322156758' % settings.FB_TOKEN
+        
+        try:
+            chat = {
+                "recipient":{
+                    "id":recipient_id
+                },
+                "messaging_type": "RESPONSE",
+                "message":message
+                }
+            print("DATA: %s " % chat)
+            response = requests.post(fburl, json=chat,headers=headers)
+            json_response = response.json()
+            # If the response was successful, no Exception will be raised
+            response.raise_for_status()
+        except HTTPError as http_err:
+            print(f'HTTP error occurred: {http_err}')
+        except Exception as err:
+            print(f'Other error occurred: {err}') 
+        else:
+            print('Success!')
+        return response.json()
+
+
+    # SEND TO HELPLINE
+    def send_to_helpline(self,chat_data):
+        # send chat to helpline
+        token = False
+        try:
+
+            headers = {
+                "authorization":"Basic %s" % settings.HELPLINE_TOKEN,
+                "accept": "*/*"
+                }
+
+            response = requests.post(settings.HELPLINE_BASE,headers=headers,verify=False)
+            json_response = response.json()
+
+            # if it failed to get token, return
+            if json_response.get('errors',False):
+                return "Helpline chat token error: %s " % json_response
+            
+            token = json_response["ss"][0][0]
+
+            # If the response was successful, no Exception will be raised
+            response.raise_for_status()
+        except HTTPError as http_err:
+            # print(f'HTTP token error: {http_err}')
+            return f'HTTP token error: {http_err}'
+        except Exception as err:
+            # print(f'Other token error occurred: {err}') 
+            return f'Other token error occurred: {err}'
+        else:
+            print('Token Success! %s ' % token)
+
+        if token:
+            try:
+                tm = time.mktime(datetime.now().timetuple())
+                chat = {
+                    "channel":"chat",
+                    "from":chat_data.wa_from,
+                    "message":chat_data.wa_message,
+                    "timestamp":tm,
+                    "session_id":tm,
+                    "message_id":chat_data.id
+                }
+
+                headers = {"Authorization":"Bearer %s" % token,'Content-Type':'application/json' }
+
+                response = requests.post('%smsg/' % settings.HELPLINE_BASE, json=chat,headers=headers,verify=False)
+                json_response = response.json()
+                print("Helpline chat error: %s " % json_response)
+                # if it failed to create chat, return
+                if json_response.get('errors',False):
+                    print("Helpline chat error: %s " % json_response)
+                    return "Helpline chat error: %s " % json_response
+                
+                # If the response was successful, no Exception will be raised
+                response.raise_for_status()
+            except HTTPError as http_err:
+                print(f'HTTP helpline chat error occurred: {http_err}')
+                return f'HTTP helpline chat error occurred: {http_err}'
+            except Exception as err:
+                print(f'Other helpline chat error occurred: {err}') 
+                return f'Other helpline chat error occurred: {err}'
+            else:
+                print('Success!')
+                return 'Chat Success'
+        else:
+            print("No TOKEN")
 
 
 class FacebookViewSet(viewsets.ViewSet):
@@ -558,7 +723,6 @@ class FacebookViewSet(viewsets.ViewSet):
             print('Token Success! %s ' % token)
 
         if token:
-            print("TOKEN: %s " % token)
             try:
                 tm = time.mktime(datetime.now().timetuple())
                 chat = {

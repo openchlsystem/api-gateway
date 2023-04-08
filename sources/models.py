@@ -111,8 +111,15 @@ class Twitter(models.Model):
     tw_to = models.CharField(max_length=50,default="")
     tw_dump = models.JSONField(default=[])
 
-class Whatsapp(models.Model):
+class WhatsApp(models.Model):
     wa_unique = models.CharField(max_length=200)
+    wa_message = models.TextField()
+    wa_datetime = models.DateTimeField(auto_now_add=True)
+    wa_status = models.CharField(max_length=20,default="NEW")
+    wa_direction = models.CharField(max_length=20,default="INBOX")
+    wa_from = models.CharField(max_length=50,default="")
+    wa_to = models.CharField(max_length=50,default="")
+    wa_dump = models.CharField(max_length=200)
 
 class Telegram(models.Model):
     tl_unique = models.CharField(max_length=200)
