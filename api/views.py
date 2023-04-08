@@ -437,11 +437,13 @@ class WhatsAppViewSet(viewsets.ViewSet):
             if(posted.get('field',False)):
                 message_type = posted.get('messages').get('type')
                 
-                self.saveItem(posted,)
+                # self.saveItem(posted,)
                 if(message_type == 'text'):
                     response_message = self.saveItem(request.data)
                 elif(message_type == 'image' or message_type == 'document'):
                     response_message = self.handleAttachmentMessage()
+                else:
+                    response_message = self.saveItem(request.data)
 
             return  Response(response_message, status=status.HTTP_200_OK)
                 
