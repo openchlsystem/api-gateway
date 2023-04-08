@@ -432,7 +432,7 @@ class WhatsAppViewSet(viewsets.ViewSet):
         if request.data.get('object') == 'whatsapp_business_account':
             
             posted = request.data.get('entry')[0].get('changes')[0].get('value')
-
+            response_message = "Invalid Request"
             if(posted.get('field',False)):
                 message_type = posted.get('messages').get('type')
                 
