@@ -32,7 +32,7 @@ class FacebookSerializer(serializers.ModelSerializer):
 class WhatsAppSerializer(serializers.ModelSerializer):
     class Meta:
         model = WhatsApp
-        fields = ("__all__")
+        fields = ['wa_unique','wa_message','wa_from','wa_dump'] # ("__all__")
 
 class TwitterSerializer(serializers.ModelSerializer):
     class Meta:

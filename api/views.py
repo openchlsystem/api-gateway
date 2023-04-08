@@ -467,12 +467,14 @@ class WhatsAppViewSet(viewsets.ViewSet):
                 serializer = self.serializer_class(data=post)
 
                 if serializer.is_valid():
+                    
                     fb = WhatsApp.objects.create(**serializer.validated_data)
                     
                     self.send_to_helpline(fb)
                     # res = self.send_to_facebook(posted)
                     return "Success" #  Response("Success", status=status.HTTP_200_OK)# Response(serializer.validated_data, status=status.HTTP_200_OK) #1_CREATED)
                 else:
+                    print("NOT VALID")
                     return False
             except Exception as e:
                 print("Error: %s " % e.args[0])
