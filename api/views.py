@@ -460,7 +460,7 @@ class WhatsAppViewSet(viewsets.ViewSet):
                     "wa_from":posted.get('messages').get('from'),
                     "wa_to":posted.get('contacts').get('profile').get('name'),
                 }
-
+                print("THE DATA: %s " % post)
                 serializer = self.serializer_class(data=post)
 
                 if serializer.is_valid():
@@ -472,6 +472,7 @@ class WhatsAppViewSet(viewsets.ViewSet):
                 else:
                     return False
             except Exception as e:
+                print("Error: %s " % e.args[0])
                 return "Error: %s " % e.args[0]
 
     def send_message(self,recipient_id, message):
