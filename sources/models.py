@@ -119,7 +119,7 @@ class WhatsApp(models.Model):
     wa_direction = models.CharField(max_length=20,default="INBOX")
     wa_from = models.CharField(max_length=50,default="")
     wa_to = models.CharField(max_length=50,default="")
-    wa_dump = models.CharField(max_length=200)
+    wa_dump = models.JSONField(default=[])
 
 class Telegram(models.Model):
     tl_unique = models.CharField(max_length=200)

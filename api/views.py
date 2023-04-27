@@ -220,24 +220,30 @@ class ChatViewSet(viewsets.ViewSet):
         """
         Return a list of all sources.
         """
-        queryset = Chats.objects.all().order_by('-id')
-        serializer_class = ChatSerializer(queryset, many=True)
+        
+        if(request.GET.get('hub.mode',False)):
+            mode = request.GET.get('hub.mode',False)
+            token = request.GET.get('hub.verify_token',False)
+            challenge = request.GET.get('hub.challenge',False)
 
-        return Response(serializer_class.data)
+            if(mode and token):
+                if mode == "subscribe" and token == 'aYyHMLNwmE)Y?-G};x)a2zt6wrl48gayahugfnlBx!Rfh%e&x':
+                    return Response(int(challenge),status=200)
+                else:
+                    return Response(status=403)
+            else:
+                return Response(status=403)
+            
+        else:
+            queryset = Chats.objects.all().order_by('-id')
+            serializer_class = ChatSerializer(queryset, many=True)
+
+            return Response(serializer_class.data)
 
 
     def create(self, request,sessionid=False):
         posted = request.data
-        if sessionid:
-            # send close session to WENI
-            # POST /api/v2/flow_starts.json
-            #     "flow": "f5901b62-ba76-4003-9c62-72fdacc1b7b7",
-            #     "groups": ["f5901b62-ba76-4003-9c62-72fdacc15515"],
-            #     "contacts": ["f5901b62-ba76-4003-9c62-fjjajdsi15553"],
-            #     "urns": ["twitter:sirmixalot", "tel:+12065551212"],
-            #     "params": {"first_name": "Ryan", "last_name": "Lewis"}
-            # }
-            
+        if sessionid:            
             try:
                 chat = Chats.objects.filter(chat_session=sessionid)
                 chat = {
@@ -254,24 +260,35 @@ class ChatViewSet(viewsets.ViewSet):
                 json_response = response.json()
                 # If the response was successful, no Exception will be raised
                 response.raise_for_status()
-            except HTTPError as http_err:
+                return Response({'status':"success"}, status=status.HTTP_200_OK)
+            except Exception as http_err:
                 print(f'HTTP error occurred: {http_err}')
-            except Exception as err:
-                print(f'Other error occurred: {err}') 
-            else:
-                print('Success!')
+                return Response({'status':"success"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-            return Response({'status':"success"}, status=status.HTTP_200_CREATED)
+            
 
-        posted = {
-            "chat_sender": posted.get('chat_sender'),
-            "chat_receiver": posted.get('chat_receiver'),
-            "chat_message": posted.get('chat_message'),
-            "chat_session": posted.get('chat_session'),
-            "chat_dump": posted,
-            "chat_response": "",
-            "chat_source": posted.get('chat_source')
-        }
+        if request.data.get('object',False):
+            if request.data.get('object') == 'whatsapp_business_account':
+                posted = request.data.get('entry')[0].get('messaging')[0]
+                channel = 'WhatsApp'
+            elif request.data.get('object') == 'page':
+                posted = request.data.get('entry')[0].get('messaging')[0]
+                channel = 'Facebook'
+        else:
+            posted = {
+                "chat_sender": posted.get('chat_sender'),
+                "chat_receiver": posted.get('chat_receiver'),
+                "chat_message": posted.get('chat_message'),
+                "chat_session": posted.get('chat_session'),
+                "chat_dump": posted,
+                "chat_response": "",
+                "chat_source": posted.get('chat_source')
+            }
+        channel = posted.get('chat_channel',False)
+        if(channel and not channel == 'chat'):
+            # handle response to other sources
+            print('SOURCE: %s ' % channel)
+
         serializer = self.serializer_class(data=posted)
 
         if serializer.is_valid():
@@ -463,7 +480,7 @@ class WhatsAppViewSet(viewsets.ViewSet):
                     "wa_from":posted.get('messages')[0].get('from'),
                     "wa_to":posted.get('contacts')[0].get('profile').get('name'),
                 }
-                print("THE DATA: %s " % post)
+                
                 serializer = self.serializer_class(data=post)
 
                 if serializer.is_valid():
@@ -543,7 +560,7 @@ class WhatsAppViewSet(viewsets.ViewSet):
             try:
                 tm = time.mktime(datetime.now().timetuple())
                 chat = {
-                    "channel":"chat",
+                    "channel":"whatsapp",
                     "from":chat_data.wa_from,
                     "message":chat_data.wa_message,
                     "timestamp":tm,
@@ -618,19 +635,6 @@ class FacebookViewSet(viewsets.ViewSet):
                         response_message = self.handleAttachmentMessage()
                     elif (message.get('text',False)):
                         response_message = self.saveItem(request.data,posted)
-                        # chat_data = {
-
-                        # }
-                        # if(request.META.get('HTTP_REFERER') == 'facebook.com'):
-                        #     send_to_helpline(message)
-                        # else:
-
-                        # message = {"text":"Ninafurahi kukukaribisha, naitwa  #Malezi. Mimi ni roboti  ya @SemaTanzania. Kwanza kabisa naomba tufahamiane. Kama hutojali nitakuuliza maswali mawiliili kuweza kukufahamu nakusaidia kuboresha huduma zetu."}
-                        
-                        # self.send_message(recipient, message)
-                        # response_message = self.handlePayload()
-                        # self.send_message(recipient, response_message)
-                        # self.send_to_helpline()
             
             elif (posted.get('postback',False)):
                 response_message = self.handlePostback()
@@ -683,7 +687,7 @@ class FacebookViewSet(viewsets.ViewSet):
                 "messaging_type": "RESPONSE",
                 "message":message
                 }
-            print("DATA: %s " % chat)
+            
             response = requests.post(fburl, json=chat,headers=headers)
             json_response = response.json()
             # If the response was successful, no Exception will be raised
@@ -732,7 +736,7 @@ class FacebookViewSet(viewsets.ViewSet):
             try:
                 tm = time.mktime(datetime.now().timetuple())
                 chat = {
-                    "channel":"chat",
+                    "channel":"facebook",
                     "from":chat_data.fb_from,
                     "message":chat_data.fb_message,
                     "timestamp":tm,
