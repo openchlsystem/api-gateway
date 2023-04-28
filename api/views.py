@@ -245,16 +245,16 @@ class ChatViewSet(viewsets.ViewSet):
         posted = request.data
         if sessionid:            
             try:
-                chat = Chats.objects.filter(chat_session=sessionid)
+                chat = Chats.objects.filter(chat_session=sessionid).first()
                 chat = {
                     "flow": sessionid,
-                    "groups": ["f5901b62-ba76-4003-9c62-72fdacc15515"],
+                    # "groups": ["f5901b62-ba76-4003-9c62-72fdacc15515"],
                     "contacts": [chat.chat_sender],
-                    "urns": ["tel:" + chat.chat_sender] #,
-                    # "params": {"first_name": "Ryan", "last_name": "Lewis"}
+                    # "urns": ["tel:" + chat.chat_sender]
+                    "params":{}
                 }
 
-                headers = {"Authorization":"Token a8f15467cc4fd8febfac3f7694349ec07a789e64"}
+                headers = {"Authorization":"Token %s " % settings.ILHA_TOKEN}
 
                 response = requests.post('https://rapidpro.ilhasoft.mobi/api/v2/flow_starts', json=chat,headers=headers)
                 json_response = response.json()
