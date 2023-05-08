@@ -247,11 +247,10 @@ class ChatViewSet(viewsets.ViewSet):
             try:
                 chat = Chats.objects.filter(chat_session=sessionid).first()
                 chat = {
-                    "flow": sessionid,
-                    # "groups": ["f5901b62-ba76-4003-9c62-72fdacc15515"],
+                    "flow":settings.FLOW_ID,
                     "contacts": [chat.chat_sender],
-                    # "urns": ["tel:" + chat.chat_sender]
                     "params":{}
+                    # "urns": ["tel:" + chat.chat_sender]
                 }
 
                 headers = {"Authorization":"Token %s " % settings.ILHA_TOKEN}
