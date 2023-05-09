@@ -314,31 +314,30 @@ class ChatViewSet(viewsets.ViewSet):
                 "chat_channel": channel
             }
         
-        try:
-            serializer = self.serializer_class(data=posted)
+        serializer = self.serializer_class(data=posted)
 
-            if serializer.is_valid():
-                chat = Chats.objects.create(**serializer.validated_data)
+        if serializer.is_valid():
+            chat = Chats.objects.create(**serializer.validated_data)
 
-                if chat.chat_source == 'INBOX':
-                    self.send_to_helpline(chat)
-                else:
-                    if channel == 'Facebook':
-                        print("Send to Facebook")
-                        self.send_to_facebook(chat)
-                    elif channel == 'WhatsApp':
-                        print("Send to Whatsapp")
-                        self.send_to_whatsapp(chat)
-                    elif chat.chat_channel == 'WENI':
-                        print("SEND TO WENI")
-                        self.send_to_weni(chat)
-                        #self.send_to_facebook(chat)
+            if chat.chat_source == 'OUTBOX':
+                if channel == 'Facebook':
+                    print("Send to Facebook")
+                    self.send_to_facebook(chat)
+                elif channel == 'WhatsApp':
+                    print("Send to Whatsapp")
+                    self.send_to_whatsapp(chat)
+                elif chat.chat_channel == 'WENI':
+                    print("SEND TO WENI")
+                    self.send_to_weni(chat)
+                    #self.send_to_facebook(chat)
+            else:
+                self.send_to_helpline(chat)
 
-                return Response({'status':"success",'uuid':chat.chat_uuid}, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            return Response({'status': 'Bad Request %s ' % e.args[0],
-                            'message': serializer.is_valid()},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response({'status':"success",'uuid':chat.chat_uuid}, status=status.HTTP_201_CREATED)
+        
+        return Response({'status': 'Bad Request',
+                        'message': serializer.error_messages},
+                        status=status.HTTP_400_BAD_REQUEST)
     
     def send_to_helpline(self,chat_data):
         # send chat to helpline
