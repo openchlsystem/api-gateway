@@ -526,7 +526,7 @@ class FacebookViewSet(viewsets.ViewSet):
             try:
                 tm = time.mktime(datetime.now().timetuple())
                 chat = {
-                    "channel":chat_data.chat_channel,
+                    "channel":'WENI',#chat_data.chat_channel,
                     "from":chat_data.chat_sender,
                     "message":chat_data.chat_message,
                     "timestamp":tm,
@@ -541,15 +541,16 @@ class FacebookViewSet(viewsets.ViewSet):
                 
                 # if it failed to create chat, return
                 if json_response.get('errors',False):
+                    print("Helpline chat error: %s " % json_response)
                     return "Helpline chat error: %s " % json_response
+                else:
+                    print(" SUCCESSHelpline chat error: %s " % json_response)
                 # If the response was successful, no Exception will be raised
                 response.raise_for_status()
             except Exception as err:
-                # print(f'Other helpline chat error occurred: {err}') 
+                print(f'Other helpline chat error occurred: {err}') 
                 return f'Other helpline chat error occurred: {err}'
     
-
-
 class WhatsAppViewSet(viewsets.ViewSet):
 
     queryset = WhatsApp.objects.all().order_by('-id')
