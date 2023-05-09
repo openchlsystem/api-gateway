@@ -295,14 +295,7 @@ class ChatViewSet(viewsets.ViewSet):
                     "chat_channel": 'FACEBOOK'
                 }
         else:
-            direction = posted.get('chat_source',False)
-            if(direction):
-                channel = direction
-                direction = 'INBOX' if direction == 'WENI' else 'OUTBOX'
-            else:
-                channel = posted.get('chat_schannel')
-                direction = posted.get('chat_source')
-
+            channel = posted.get('chat_channel')
             posted = {
                 "chat_sender": posted.get('chat_sender'),
                 "chat_receiver": posted.get('chat_receiver'),
@@ -310,7 +303,7 @@ class ChatViewSet(viewsets.ViewSet):
                 "chat_session": posted.get('chat_session'),
                 "chat_dump": posted,
                 "chat_response": "",
-                "chat_source": direction,
+                "chat_source": posted.get('chat_source'),
                 "chat_channel": channel
             }
         
@@ -336,7 +329,7 @@ class ChatViewSet(viewsets.ViewSet):
             return Response({'status':"success",'uuid':chat.chat_uuid}, status=status.HTTP_201_CREATED)
         
         return Response({'status': 'Bad Request',
-                        'message': serializer.errors},
+                        'message': serializer.error_messages},
                         status=status.HTTP_400_BAD_REQUEST)
     
     def send_to_helpline(self,chat_data):
