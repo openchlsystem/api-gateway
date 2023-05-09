@@ -27,6 +27,7 @@ class Chats(models.Model):
     chat_uuid = models.UUIDField(default=uuid.uuid4, editable=False)
     chat_response = models.CharField(max_length=100,blank=True)
     chat_source = models.CharField(max_length=100,choices=HC.CHAT_SOURCES,default='WENI')
+    chat_channel = models.CharField(max_length=100,choices=HC.CHAT_CHANNELS,default='WENI')
 
 # class MAIL(models.Model):
 #     mail_sender = models.IntegerField(blank=False)

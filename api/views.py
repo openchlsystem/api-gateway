@@ -265,15 +265,44 @@ class ChatViewSet(viewsets.ViewSet):
                 return Response({'status':"success"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             
-
+        channel = 'chat'
         if request.data.get('object',False):
             if request.data.get('object') == 'whatsapp_business_account':
                 posted = request.data.get('entry')[0].get('messaging')[0]
-                channel = 'WhatsApp'
+                posted = {
+                    "chat_sender": posted.get('chat_sender'),
+                    "chat_receiver": posted.get('chat_receiver'),
+                    "chat_message": posted.get('chat_message'),
+                    "chat_session": posted.get('chat_session'),
+                    "chat_dump": posted,
+                    "chat_response": "",
+                    "chat_source": 'INBOX',
+                    "chat_channel": 'WHATSAPP'
+                }
+
             elif request.data.get('object') == 'page':
                 posted = request.data.get('entry')[0].get('messaging')[0]
                 channel = 'Facebook'
+
+                posted = {
+                    "chat_sender": posted.get('chat_sender'),
+                    "chat_receiver": posted.get('chat_receiver'),
+                    "chat_message": posted.get('chat_message'),
+                    "chat_session": posted.get('chat_session'),
+                    "chat_dump": posted,
+                    "chat_response": "",
+                    "chat_source":  'INBOX',
+                    "chat_channel": 'FACEBOOK'
+                }
         else:
+            direction = posted.get('chat_source',False)
+            if(direction and direction == 'WENI'):
+                channel = 'WENI'
+                direction = 'INBOX'
+            else:
+                channel = posted.get('chat_schannel')
+                direction = posted.get('chat_source')
+
             posted = {
                 "chat_sender": posted.get('chat_sender'),
                 "chat_receiver": posted.get('chat_receiver'),
@@ -281,26 +310,28 @@ class ChatViewSet(viewsets.ViewSet):
                 "chat_session": posted.get('chat_session'),
                 "chat_dump": posted,
                 "chat_response": "",
-                "chat_source": posted.get('chat_source')
+                "chat_source": direction,
+                "chat_channel": channel
             }
-        channel = posted.get('chat_channel',False)
-        if(channel and not channel == 'chat'):
-            # handle response to other sources
-            print('SOURCE: %s ' % channel)
-
+        
         serializer = self.serializer_class(data=posted)
 
         if serializer.is_valid():
             chat = Chats.objects.create(**serializer.validated_data)
-            
-            if chat.chat_source == 'WENI':
-                # push chat to helpline
+
+            if chat.chat_source == 'INBOX':
                 self.send_to_helpline(chat)
             else:
-                print("SEND TO WENI")
-                self.send_to_weni(chat)
-                #self.send_to_facebook(chat)
-
+                if channel == 'Facebook':
+                    print("Send to Facebook")
+                    self.send_to_facebook(chat)
+                elif channel == 'WhatsApp':
+                    print("Send to Whatsapp")
+                    self.send_to_whatsapp(chat)
+                elif chat.chat_channel == 'WENI':
+                    print("SEND TO WENI")
+                    self.send_to_weni(chat)
+                    #self.send_to_facebook(chat)
 
             return Response({'status':"success",'uuid':chat.chat_uuid}, status=status.HTTP_201_CREATED)
 
@@ -342,7 +373,7 @@ class ChatViewSet(viewsets.ViewSet):
             try:
                 tm = time.mktime(datetime.now().timetuple())
                 chat = {
-                    "channel":"chat",
+                    "channel":chat_data.chat_channel,
                     "from":chat_data.chat_sender,
                     "message":chat_data.chat_message,
                     "timestamp":tm,
@@ -381,10 +412,9 @@ class ChatViewSet(viewsets.ViewSet):
                 "text": chat_data.chat_message
             }
 
-            headers = {"Authorization":"Token a8f15467cc4fd8febfac3f7694349ec07a789e64"}
+            headers = {"Authorization":"Token %s " % settings.ILHA_TOKEN}
 
             response = requests.post('https://rapidpro.ilhasoft.mobi/api/v2/broadcasts', json=chat,headers=headers)
-            json_response = response.json()
             # If the response was successful, no Exception will be raised
             response.raise_for_status()
         except HTTPError as http_err:
@@ -405,12 +435,11 @@ class ChatViewSet(viewsets.ViewSet):
                 "message": {"text":chat_data.chat_message}
             }
 
-            headers = {"access_token":"EAAq50PnynzgBAP6DPk5giqGSJo6TYNPcDlehl2WWGlf2vl0UvUcQiMNntECZBBekL381aGu1POPGUKJWU3hjg30PGFsYO8GFFsZAIewfCFIMD8Rwj61unfzhjIK5FUEeagZAWuGKh9D4oXeaQglZCP9K0fgK6xtLjzNyeXhHrcR8kNJY9hIeZC5mHH4ZBJJamfFrbjrsyrSAZDZD"}
+            headers = {"access_token":settings.FB_TOKEN}
             
-            fburl = 'https://graph.facebook.com/v2.6/me/messages?access_token=EAAq50PnynzgBAP6DPk5giqGSJo6TYNPcDlehl2WWGlf2vl0UvUcQiMNntECZBBekL381aGu1POPGUKJWU3hjg30PGFsYO8GFFsZAIewfCFIMD8Rwj61unfzhjIK5FUEeagZAWuGKh9D4oXeaQglZCP9K0fgK6xtLjzNyeXhHrcR8kNJY9hIeZC5mHH4ZBJJamfFrbjrsyrSAZDZD&recipient=3412749322156758'
+            fburl = 'https://graph.facebook.com/v2.6/me/messages?access_token=%s&recipient=%s' % (settings.FB_TOKEN,settings.FB_PAGE_ID)
 
             response = requests.post(fburl, json=chat,headers=headers)
-            json_response = response.json()
             # If the response was successful, no Exception will be raised
             response.raise_for_status()
         except HTTPError as http_err:
@@ -496,7 +525,7 @@ class WhatsAppViewSet(viewsets.ViewSet):
                 print("Error: %s " % e.args[0])
                 return "Error: %s " % e.args[0]
 
-    def send_message(self,recipient_id, message):
+    def send_to_facebook(self,recipient_id, message):
         """Send a response to Facebook"""
         
         headers = {"access_token":settings.FB_TOKEN} 
@@ -512,15 +541,13 @@ class WhatsAppViewSet(viewsets.ViewSet):
                 }
             print("DATA: %s " % chat)
             response = requests.post(fburl, json=chat,headers=headers)
-            json_response = response.json()
             # If the response was successful, no Exception will be raised
             response.raise_for_status()
-        except HTTPError as http_err:
-            print(f'HTTP error occurred: {http_err}')
+        # except HTTPError as http_err:
+        #     print(f'HTTP error occurred: {http_err}')
         except Exception as err:
             print(f'Other error occurred: {err}') 
-        else:
-            print('Success!')
+            
         return response.json()
 
 

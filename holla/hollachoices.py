@@ -7,6 +7,7 @@ QUEUE_STATUS = {"0":"OFFLINE","1":"AVAILABLE","2":"ON BREAK","3":"PERSONAL BREAK
 TYPE_CHOICES = [("userpass","Password")]
 PERSON_TYPE = [("REPORTER","REPORTER"),("CLIENT","CLIENT"),("PERPETRATOR","PERPETRATOR")]
 CHAT_SOURCES = [("WENI","WENI"),("HELPLINE","HELPLINE")]
+CHAT_CHANNELS = [("WENI","WENI"),("FACEBOOK","FACEBOOK"),("WHATSAPP","WHATSAPP")]
 MARITAL_CHOICES = [
                     ("Single","Single"),
                     ("Married","Married"),
