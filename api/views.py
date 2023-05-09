@@ -485,11 +485,11 @@ class FacebookViewSet(viewsets.ViewSet):
                 if serializer.is_valid():
                     chat = Chats.objects.create(**serializer.validated_data)
                     self.send_to_helpline(chat)
-
-
-            return  Response(response_message, status=status.HTTP_200_OK)
-                
-        return Response({'status': 'Bad Request %s ' % request.data,
+                    return  Response(response_message, status=status.HTTP_200_OK) 
+                else:
+                    print("NOT VALID DATA: %s " % chat)               
+        print("FB Errors: %s " % serializer.error_messages)
+        return Response({'status': 'Bad Request %s ' % serializer.error_messages,
                          'message': "Could not process request"},
                           status=status.HTTP_400_BAD_REQUEST)
     
