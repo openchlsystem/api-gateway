@@ -442,8 +442,8 @@ class ChatViewSet(viewsets.ViewSet):
 
 class FacebookViewSet(viewsets.ViewSet):
 
-    queryset = Facebook.objects.all().order_by('-id')
-    serializer_class = FacebookSerializer
+    queryset = Chats.objects.all().order_by('-id')
+    serializer_class = ChatSerializer
     
     def list(self, request, format=None):
         """
@@ -476,6 +476,7 @@ class FacebookViewSet(viewsets.ViewSet):
                     "chat_message": posted.get('message').get('text'),
                     "chat_session": posted.get('message').get('mid'),
                     "chat_dump": posted,
+                    "chat_response": "",
                     "chat_source":  'INBOX',
                     "chat_channel": 'FACEBOOK'
                 }
@@ -485,9 +486,7 @@ class FacebookViewSet(viewsets.ViewSet):
                 if serializer.is_valid():
                     chat = Chats.objects.create(**serializer.validated_data)
                     self.send_to_helpline(chat)
-                    return  Response(response_message, status=status.HTTP_200_OK) 
-                else:
-                    print("NOT VALID DATA: %s " % chat)               
+                    return  Response(response_message, status=status.HTTP_200_OK)             
         print("FB Errors: %s " % serializer.error_messages)
         return Response({'status': 'Bad Request %s ' % serializer.error_messages,
                          'message': "Could not process request"},
