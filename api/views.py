@@ -456,7 +456,7 @@ class FacebookViewSet(viewsets.ViewSet):
         challenge = request.GET.get('hub.challenge',False)
 
         if(mode and token):
-            if mode == "subscribe" and token == 'aYyHMLNwmE)Y?-G};x)a2zt6wrl48gayahugfnlBx!Rfh%e&x':
+            if mode == "subscribe" and token == settings.FB_VERIFY_TOKEN:
                 return Response(int(challenge),status=200)
             else:
                 return Response(status=403)
