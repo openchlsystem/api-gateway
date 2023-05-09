@@ -227,7 +227,7 @@ class ChatViewSet(viewsets.ViewSet):
             challenge = request.GET.get('hub.challenge',False)
 
             if(mode and token):
-                if mode == "subscribe" and token == 'aYyHMLNwmE)Y?-G};x)a2zt6wrl48gayahugfnlBx!Rfh%e&x':
+                if mode == "subscribe" and token == settings.FB_VERIFY_TOKEN:
                     return Response(int(challenge),status=200)
                 else:
                     return Response(status=403)
@@ -255,7 +255,7 @@ class ChatViewSet(viewsets.ViewSet):
 
                 headers = {"Authorization":"Token %s " % settings.ILHA_TOKEN}
 
-                response = requests.post('https://rapidpro.ilhasoft.mobi/api/v2/flow_starts', json=chat,headers=headers)
+                response = requests.post('https://rapidpro.ilhasoft.mobi/api/v2/flow_starts.json', json=chat,headers=headers)
                 json_response = response.json()
                 # If the response was successful, no Exception will be raised
                 response.raise_for_status()
