@@ -526,7 +526,7 @@ class FacebookViewSet(viewsets.ViewSet):
             try:
                 tm = time.mktime(datetime.now().timetuple())
                 chat = {
-                    "channel":'WENI',#chat_data.chat_channel,
+                    "channel":chat_data.chat_channel,
                     "from":chat_data.chat_sender,
                     "message":chat_data.chat_message,
                     "timestamp":tm,
