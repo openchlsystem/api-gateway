@@ -544,7 +544,7 @@ class FacebookViewSet(viewsets.ViewSet):
                     print("Helpline chat error: %s " % json_response)
                     return "Helpline chat error: %s " % json_response
                 else:
-                    print(" SUCCESSHelpline chat error: %s " % json_response)
+                    print("Success Helpline chat error: %s " % json_response)
                 # If the response was successful, no Exception will be raised
                 response.raise_for_status()
             except Exception as err:
