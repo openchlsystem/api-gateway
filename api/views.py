@@ -295,7 +295,12 @@ class ChatViewSet(viewsets.ViewSet):
                     "chat_channel": 'FACEBOOK'
                 }
         else:
-            channel = posted.get('chat_channel')
+            channel = posted.get('chat_channel',False)
+            source = posted.get('chat_source')
+            if not channel and source == "WENI":
+                channel = "WENI" 
+                source = 'INBOX'
+
             posted = {
                 "chat_sender": posted.get('chat_sender'),
                 "chat_receiver": posted.get('chat_receiver'),
@@ -303,7 +308,7 @@ class ChatViewSet(viewsets.ViewSet):
                 "chat_session": posted.get('chat_session'),
                 "chat_dump": posted,
                 "chat_response": "",
-                "chat_source": posted.get('chat_source'),
+                "chat_source": source,
                 "chat_channel": channel
             }
         
