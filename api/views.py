@@ -317,14 +317,14 @@ class ChatViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             chat = Chats.objects.create(**serializer.validated_data)
 
-            if chat.chat_source == 'OUTBOX':
-                if channel == 'Facebook':
+            if chat.chat_source.upper() == 'OUTBOX':
+                if channel.lower() == 'facebook':
                     print("Send to Facebook")
                     self.send_to_facebook(chat)
-                elif channel == 'WhatsApp':
+                elif channel.lower() == 'whatsapp':
                     print("Send to Whatsapp")
                     self.send_to_whatsapp(chat)
-                elif chat.chat_channel == 'WENI':
+                elif channel.lower() == 'weni':
                     print("SEND TO WENI")
                     self.send_to_weni(chat)
                     #self.send_to_facebook(chat)
@@ -466,7 +466,7 @@ class FacebookViewSet(viewsets.ViewSet):
 
     def create(self, request):
         if request.data.get('object') == 'page':
-            posted = request.data.get('entry')[0].get('messaging')[0]
+            posted = request.data.get('entry',False)[0].get('messaging',False)[0]
             response_message = "NO ACTION"
 
             if(posted.get('message',False)):
