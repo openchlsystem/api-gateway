@@ -347,7 +347,7 @@ class ChatViewSet(viewsets.ViewSet):
                 "accept": "*/*"
                 }
 
-            response = requests.post(settings.HELPLINE_BASE,headers=headers,verify=False)
+            response = requests.post(settings.HELPLINE_BASE,headers=headers)
             json_response = response.json()
 
             # if it failed to get token, return
@@ -381,7 +381,7 @@ class ChatViewSet(viewsets.ViewSet):
 
                 headers = {"Authorization":"Bearer %s" % token,'Content-Type':'application/json' }
 
-                response = requests.post('%smsg/' % settings.HELPLINE_BASE, json=chat,headers=headers,verify=False)
+                response = requests.post('%smsg/' % settings.HELPLINE_BASE, json=chat,headers=headers)
                 json_response = response.json()
                 
                 # if it failed to create chat, return
@@ -397,7 +397,7 @@ class ChatViewSet(viewsets.ViewSet):
         # send chat to WENI
         try:
             chat = {
-                "urns": ["tel:+254727647431"],
+                "urns": [],
                 "contacts": [chat_data.chat_sender],
                 "text": chat_data.chat_message
             }
@@ -485,7 +485,8 @@ class FacebookViewSet(viewsets.ViewSet):
 
                 if serializer.is_valid():
                     chat = Chats.objects.create(**serializer.validated_data)
-                    self.send_to_helpline(chat)
+                    if not chat.chat_sender == settings.FB_PAGE_ID:
+                        self.send_to_helpline(chat)
                     return  Response(response_message, status=status.HTTP_200_OK)             
         print("FB Errors: %s " % serializer.error_messages)
         return Response({'status': 'Bad Request %s ' % serializer.error_messages,
@@ -502,22 +503,22 @@ class FacebookViewSet(viewsets.ViewSet):
                 "accept": "*/*"
                 }
 
-            response = requests.post(settings.HELPLINE_BASE,headers=headers,verify=False)
+            response = requests.post(settings.HELPLINE_BASE,headers=headers)
             json_response = response.json()
 
             # if it failed to get token, return
             if json_response.get('errors',False):
                 return "Helpline chat token error: %s " % json_response
-            
+            print("Response: %s " % json_response)
             token = json_response["ss"][0][0]
 
             # If the response was successful, no Exception will be raised
             response.raise_for_status()
         except HTTPError as http_err:
-            # print(f'HTTP token error: {http_err}')
+            print(f'HTTP token error: {http_err}')
             return f'HTTP token error: {http_err}'
         except Exception as err:
-            # print(f'Other token error occurred: {err}') 
+            print(f'Other token error occurred: {err}') 
             return f'Other token error occurred: {err}'
         else:
             print('Token Success!')
@@ -536,7 +537,7 @@ class FacebookViewSet(viewsets.ViewSet):
 
                 headers = {"Authorization":"Bearer %s" % token,'Content-Type':'application/json' }
 
-                response = requests.post('%smsg/' % settings.HELPLINE_BASE, json=chat,headers=headers,verify=False)
+                response = requests.post('%smsg/' % settings.HELPLINE_BASE, json=chat,headers=headers)
                 json_response = response.json()
                 
                 # if it failed to create chat, return
@@ -544,7 +545,7 @@ class FacebookViewSet(viewsets.ViewSet):
                     print("Helpline chat error: %s " % json_response)
                     return "Helpline chat error: %s " % json_response
                 else:
-                    print("Success Helpline chat error: %s " % json_response)
+                    print("Chat Message Success: %s " % json_response)
                 # If the response was successful, no Exception will be raised
                 response.raise_for_status()
             except Exception as err:
