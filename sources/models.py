@@ -125,4 +125,29 @@ class WhatsApp(models.Model):
 class Telegram(models.Model):
     tl_unique = models.CharField(max_length=200)
 
+class SafePal:
+    incident_report_id = models.IntegerField()
+    survivor_name = models.CharField(max_length=200)
+    survivor_gender = models.CharField(max_length=200)
+    survivor_contact_phone_number = models.CharField(max_length=200)
+    survivor_contact_email = models.CharField(max_length=200)
+    survivor_age = models.CharField(max_length=200)
+    unique_case_number = models.CharField(max_length=200) 
+    incident_location = models.CharField(max_length=200)
+    incident_date_and_time = models.CharField(max_length=200)
+    incident_type = models.CharField(max_length=200)
+    incident_description = models.CharField(max_length=200)
+    incident_reported_by = models.CharField(max_length=200)
+    number_of_perpetrators = models.CharField(max_length=200)
+    perpetrator_name = models.CharField(max_length=200)
+    perpetrator_gender = models.CharField(max_length=200) 
+    perpetrator_estimated_age = models.CharField(max_length=200)
+    perpetrator_relationship = models.CharField(max_length=200)
+    perpetrator_location = models.CharField(max_length=200)
+    date_of_interview_with_cso = models.CharField(max_length=200)
+    chl_status = models.CharField(max_length=200)
+    chl_case_id = models.CharField(max_length=200)
+    chl_time = models.DateTimeField(auto_created=True)
+    chl_user_id = models.CharField(max_length=200)
+
 

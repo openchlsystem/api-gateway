@@ -1,6 +1,6 @@
 from django.contrib.auth.models import Group
 from users.models import User
-from sources.models import Chats,Facebook, Web, Twitter,WhatsApp
+from sources.models import Chats,Facebook, Web, Twitter,WhatsApp, SafePal
 from rest_framework import serializers
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -37,4 +37,9 @@ class WhatsAppSerializer(serializers.ModelSerializer):
 class TwitterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Twitter
+        fields = ("__all__")
+
+class SafePalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SafePal
         fields = ("__all__")
