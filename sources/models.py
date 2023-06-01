@@ -145,9 +145,9 @@ class SafePal(models.Model):
     perpetrator_relationship = models.CharField(max_length=200)
     perpetrator_location = models.CharField(max_length=200)
     date_of_interview_with_cso = models.CharField(max_length=200)
-    chl_status = models.CharField(max_length=200,default='NEW')
+    chl_status = models.CharField(max_length=200,blank=True,default='NEW')
     chl_case_id = models.CharField(max_length=200,blank=True,default="")
-    chl_time = models.DateTimeField(auto_created=True)
+    chl_time = models.DateTimeField(auto_now_add=True)
     chl_user_id = models.CharField(max_length=200,blank=True,default="")
 
 
