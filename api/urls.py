@@ -12,6 +12,7 @@ router.register(r'chat/(?P<sessionid>\w+)/close', views.ChatViewSet,basename='Cl
 router.register(r'twitter', views.TwitterViewSet,basename='Twitter')
 router.register(r'facebook', views.FacebookViewSet,basename='Facebook')
 router.register(r'whatsapp', views.WhatsAppViewSet,basename='Whatsapp')
+router.register(r'safepal', views.SafePalViewSet,basename='safepal')
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.

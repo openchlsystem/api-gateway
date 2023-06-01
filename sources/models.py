@@ -125,7 +125,7 @@ class WhatsApp(models.Model):
 class Telegram(models.Model):
     tl_unique = models.CharField(max_length=200)
 
-class SafePal:
+class SafePal(models.Model):
     incident_report_id = models.IntegerField()
     survivor_name = models.CharField(max_length=200)
     survivor_gender = models.CharField(max_length=200)
