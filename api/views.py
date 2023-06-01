@@ -5,11 +5,11 @@ from django.contrib.auth.models import Group
 from django.http import JsonResponse
 from rest_framework import viewsets,status
 from users.models import User
-from sources.models import Chats,Facebook, Web, Twitter,WhatsApp
+from sources.models import Chats,Facebook, Web, Twitter,WhatsApp, SafePal
 from rest_framework import permissions
 from rest_framework.response import Response
 from api.serializers import UserSerializer, GroupSerializer, ChatSerializer, FacebookSerializer, \
-    TwitterSerializer, WebSerializer,WhatsAppSerializer
+    TwitterSerializer, WebSerializer,WhatsAppSerializer, SafePalSerializer
 import uuid
 import requests,time,ssl
 from datetime import datetime
@@ -73,6 +73,144 @@ class SourcesViewSet(viewsets.ViewSet):
         return Response({'status': 'Bad Request Data %s ' % request.data,
                          'message': serializer.is_valid()},
                           status=status.HTTP_400_BAD_REQUEST)
+
+class SafePalViewSet(viewsets.ViewSet):
+    queryset = SafePal.objects.all().order_by('-id')
+    serializer_class = SafePalSerializer
+    
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request, format=None):
+        """
+        Return a list of all sources.
+        """
+        queryset = Web.objects.all().order_by('-id')
+        serializer_class = SafePalSerializer(queryset, many=True)
+
+        return Response(serializer_class.data)
+
+    def create(self, request):
+        try:
+            serializer = self.serializer_class(data=request.data)
+
+            if serializer.is_valid():
+                case = SafePal.objects.create(**serializer.validated_data)
+                # cc = self.helpline_case(case)
+                return Response("Success: %s ", status=status.HTTP_201_CREATED)
+
+            #raise Exception("DEBUG")
+            return Response({'status': 'Bad Request Data for %s ' % request.data,
+                            'message': serializer.is_valid()},
+                            status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'status': 'Bad Request %s ' % request.data,
+                            'message': 'Error: %s ' % e.args[0]},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def helpline_case(self,case):
+        # sending case to helpline
+        # get token
+        token = False
+        try:
+
+            headers = {
+                "authorization":"Basic %s" % settings.HELPLINE_TOKEN,
+                "accept": "*/*"
+                }
+
+            response = requests.post(settings.HELPLINE_BASE,headers=headers,verify=False)
+            json_response = response.json()
+            token = json_response["ss"][0][0]
+
+            # If the response was successful, no Exception will be raised
+            response.raise_for_status()
+        except HTTPError as http_err:
+            print(f'HTTP token error: {http_err}')
+            return f'HTTP token error: {http_err}'
+        except Exception as err:
+            print(f'Other token error occurred: {err}') 
+            return f'Other token error occurred: {err}'
+        else:
+            print('Token Success!')
+        
+        if token:
+            try:
+                headers = {
+                    "Content-Type":"application/json",
+                    "Authorization":"Bearer %s" % token
+                    }
+                
+                reporter = {"fname":case.reporter_name,"landmark":case.reporter_landmark,"phone":str(case.reporter_phone).strip('+'),"email":case.reporter_email,"src":"call","src_ts":case.case_date.timestamp(),"src_uid":HC.getRandomString(),"src_callid":"","src_address":"","src_usr":"","src_vector":"1"}
+                reporter_res = requests.post("%sreporters/" % settings.HELPLINE_BASE,json=reporter,headers=headers,verify=False)
+                reporter = reporter_res.json()
+                
+                # if it failed to create reporter, return
+                if reporter.get('errors',False):
+                    return "Error creating helpline case: %s " %reporter
+                
+                reporter_id = reporter.get('reporters')[0][0]
+                
+                client = {"fname":case.client_name,"age":int(case.client_ageyears) + int(case.client_agemonths)/12,"age_group_id":"","landmark":case.client_landmark,"phone":"","email":"","src":"API","src_ts":"","src_uid":HC.getRandomString(5),"src_callid":"","src_address":"","src_usr":"","src_vector":"1"}
+                client_res = requests.post("%sclients/" % settings.HELPLINE_BASE,json=client,headers=headers,verify=False)
+                client = client_res.json()
+
+                # if it failed to create client, return
+                if client.get('errors',False):
+                    return "Error creating helpline case: %s " % client
+                
+                client_id = client.get('clients')[0][0]
+
+                perp_id = ""
+
+                case = {
+					"src":case.source if case.source else "API",
+					"src_ts":time.mktime(case.case_date.timetuple()),
+					"src_uid":HC.getRandomString(5),
+					"src_callid":"",
+					"src_address":case.reporter_email,
+					"src_usr":"200",
+					"src_vector":"2",
+					"reporter_id":reporter_id,
+					"reporter_contact_id":reporter_id,
+					"clients":[{
+						"client_id":client_id
+                    }],
+					"perpetrators":[{
+						"perpetrator_id":perp_id
+                    }],
+					"attachments":[],
+					"services":[{
+						"category_id":"116","category_id":"362039"
+                    }],
+					"knowabout116_id":"362015",
+					"case_category_root_id":"87",
+					"gbv_related":"2",
+					"case_category_id":"362534",
+					"narrative":case.case_narrative,
+					"plan":" ",
+					"priority":"1",
+					"status":"1",
+					"disposition_id":"362527"}
+
+                response = requests.post("%scases/" % settings.HELPLINE_BASE,json=case,headers=headers,verify=False)
+                json_response = response.json()
+
+                if json_response.get('errors',False):
+                    return "Could not create helpline case: %s " % json_response
+
+                # If the response was successful, no Exception will be raised
+                response.raise_for_status()
+            except HTTPError as http_err:
+                # print(f'HTTP case error: {http_err}')
+                return f'Helpline case error: {http_err}'
+            except Exception as err:
+                # print(f'Other case error occurred: {err}') 
+                return f'Other helpline case error occurred: {err}'
+            else:
+                # print('Case Success!')
+                return "Case Success"
+
 
 class WebViewSet(viewsets.ViewSet):
     queryset = Web.objects.all().order_by('-id')
