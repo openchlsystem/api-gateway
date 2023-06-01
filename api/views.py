@@ -85,7 +85,7 @@ class SafePalViewSet(viewsets.ViewSet):
         """
         Return a list of all sources.
         """
-        queryset = Web.objects.all().order_by('-id')
+        queryset = SafePal.objects.all().order_by('-id')
         serializer_class = SafePalSerializer(queryset, many=True)
 
         return Response(serializer_class.data)
