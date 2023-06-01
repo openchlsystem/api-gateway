@@ -96,15 +96,15 @@ class SafePalViewSet(viewsets.ViewSet):
 
             if serializer.is_valid():
                 case = SafePal.objects.create(**serializer.validated_data)
-                # cc = self.helpline_case(case)
-                return Response("Success: %s ", status=status.HTTP_201_CREATED)
+                cc = 'Successfully Created' #self.helpline_case(case)
+                return Response("Success: %s " % cc, status=status.HTTP_201_CREATED)
 
             #raise Exception("DEBUG")
-            return Response({'status': 'Bad Request Data for %s ' % request.data,
-                            'message': serializer.is_valid()},
+            return Response({'status': 'error',
+                            'message': serializer.error_messages},
                             status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({'status': 'Bad Request %s ' % request.data,
+            return Response({'status': "error",
                             'message': 'Error: %s ' % e.args[0]},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
