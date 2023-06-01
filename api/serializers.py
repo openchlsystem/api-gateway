@@ -42,4 +42,4 @@ class TwitterSerializer(serializers.ModelSerializer):
 class SafePalSerializer(serializers.ModelSerializer):
     class Meta:
         model = SafePal
-        fields = ("__all__")
+        fields = ["incident_report_id","survivor_name","survivor_gender","survivor_contact_phone_number","survivor_contact_email","survivor_age","unique_case_number","incident_location","incident_date_and_time","incident_type","incident_description","incident_reported_by","number_of_perpetrators","perpetrator_name","perpetrator_gender","perpetrator_estimated_age","perpetrator_relationship","perpetrator_location","date_of_interview_with_cso"]
