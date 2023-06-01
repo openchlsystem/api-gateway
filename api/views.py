@@ -97,7 +97,7 @@ class SafePalViewSet(viewsets.ViewSet):
             if serializer.is_valid():
                 case = SafePal.objects.create(**serializer.validated_data)
                 cc = 'Successfully Created' #self.helpline_case(case)
-                return Response("Success: %s " % cc, status=status.HTTP_201_CREATED)
+                return Response({'status':'Success','message':'%s ' % cc}, status=status.HTTP_201_CREATED)
 
             #raise Exception("DEBUG")
             return Response({'status': 'error',
