@@ -394,7 +394,7 @@ class ChatViewSet(viewsets.ViewSet):
 
                 headers = {"Authorization":"Token %s " % settings.ILHA_TOKEN}
 
-                response = requests.post('https://rapidpro.ilhasoft.mobi/api/v2/flow_starts.json', json=chat,headers=headers)
+                response = requests.post('%sflow_starts.json' % settings.ILHA_URL, json=chat,headers=headers)
                 json_response = response.json()
                 # If the response was successful, no Exception will be raised
                 response.raise_for_status()
@@ -542,7 +542,7 @@ class ChatViewSet(viewsets.ViewSet):
 
             headers = {"Authorization":"Token %s " % settings.ILHA_TOKEN}
 
-            response = requests.post('https://rapidpro.ilhasoft.mobi/api/v2/broadcasts', json=chat,headers=headers)
+            response = requests.post('%sbroadcasts' % settings.ILHA_TOKEN, json=chat,headers=headers)
             # If the response was successful, no Exception will be raised
             response.raise_for_status()
         except HTTPError as http_err:
