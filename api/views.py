@@ -100,7 +100,7 @@ class SafePalViewSet(viewsets.ViewSet):
                 message = {
                     "chat_sender": request.data.get('incident_reported_by'),
                     "chat_receiver": "",
-                    "chat_message": base64.encode(str(request.data)),
+                    "chat_message": base64.b64encode(str(request.data).encode()),
                     "chat_session": HC.getRandomString(),
                     "chat_dump": request.data,
                     "chat_response": "",
