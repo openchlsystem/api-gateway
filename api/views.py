@@ -161,20 +161,20 @@ class SafePalViewSet(viewsets.ViewSet):
                     "session_id":chat_data.get('chat_session'),
                     "message_id":chat_data.get('id')
                 }
-
+                print("DATA WORKING")
                 headers = {"Authorization":"Bearer %s" % token,'Content-Type':'application/json' }
 
                 response = requests.post('%smsg/' % settings.HELPLINE_BASE, json=chat,headers=headers)
+                print("DATA WORKING: %s " % response)
                 json_response = response.json()
-                
+                print("Helpline chat response: %s " % json_response)
                 # if it failed to create chat, return
                 if json_response.get('errors',False):
                     return "Helpline chat error: %s " % json_response
-                print("Helpline chat response: %s " % json_response)
                 # If the response was successful, no Exception will be raised
                 response.raise_for_status()
             except Exception as err:
-                # print(f'Other helpline chat error occurred: {err}') 
+                print(f'Other helpline chat error occurred: {err}') 
                 return f'Other helpline chat error occurred: {err}'
 
 
