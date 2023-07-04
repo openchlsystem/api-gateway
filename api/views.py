@@ -154,14 +154,14 @@ class SafePalViewSet(viewsets.ViewSet):
             try:
                 tm = time.mktime(datetime.now().timetuple())
                 chat = {
-                    "channel":'safepal',
+                    "channel":chat_data.get('chat_channel'),
                     "from":chat_data.get('chat_sender'),
-                    "message":chat_data.get('chat_message'),
+                    "message":chat_data.get('chat_message').decode(),
                     "timestamp":tm,
                     "session_id":chat_data.get('chat_session'),
                     "message_id":chat_data.get('id')
                 }
-                print("THE DATA: %s " % chat)
+                
                 headers = {"Authorization":"Bearer %s" % token,'Content-Type':'application/json' }
 
                 response = requests.post('%smsg/' % settings.HELPLINE_BASE, json=chat,headers=headers)
