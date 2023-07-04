@@ -170,6 +170,7 @@ class SafePalViewSet(viewsets.ViewSet):
                 # if it failed to create chat, return
                 if json_response.get('errors',False):
                     return "Helpline chat error: %s " % json_response
+                print("Helpline chat response: %s " % json_response)
                 # If the response was successful, no Exception will be raised
                 response.raise_for_status()
             except Exception as err:
