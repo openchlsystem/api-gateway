@@ -1,11 +1,12 @@
 from django.apps import AppConfig
+from threading import Thread
 import os,base64,requests,time
 import datetime
 import locale,random,string
 from django.utils import timezone
 from holla import settings,hollachoices as HC
 
-class SourcesThread():
+class SourcesThread(Thread):
     def run(self):
         from models import SafePal
 
