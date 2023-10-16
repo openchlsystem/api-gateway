@@ -8,7 +8,7 @@ from holla import settings,hollachoices as HC
 
 class SourcesThread(Thread):
     def run(self):
-        from models import SafePal
+        from sources.models import SafePal
 
         while True:
             cases = list(SafePal.objects.filter(chl_case_id=0).values())
