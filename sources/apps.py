@@ -9,22 +9,23 @@ class SourcesThread():
     def run(self):
         from models import SafePal
 
-        cases = list(SafePal.objects.filter(chl_case_id=0).values())
+        while True:
+            cases = list(SafePal.objects.filter(chl_case_id=0).values())
 
-        for case in cases:
-            case = {
-                    "chat_sender": case.incident_reported_by,
-                    "chat_receiver": "",
-                    "chat_message": base64.b64encode(str(case).encode()),
-                    "chat_session": HC.getRandomString(),
-                    "chat_dump": case,
-                    "chat_response": "",
-                    "chat_source": 'INBOX',
-                    "chat_channel": 'safepal',
-                    "id":case.id
-                }
-            
-            sent = self.sendtohelpline(case)
+            for case in cases:
+                case = {
+                        "chat_sender": case.incident_reported_by,
+                        "chat_receiver": "",
+                        "chat_message": base64.b64encode(str(case).encode()),
+                        "chat_session": HC.getRandomString(),
+                        "chat_dump": case,
+                        "chat_response": "",
+                        "chat_source": 'INBOX',
+                        "chat_channel": 'safepal',
+                        "id":case.id
+                    }
+                
+                sent = self.sendtohelpline(case)
 
     def sendtohelpline(self,chat_data):
         from models import SafePal
@@ -95,7 +96,6 @@ class SourcesConfig(AppConfig):
         run_once = os.environ.get('SOURCETHREAD',False)         
         if run_once:
             return
-
         os.environ['SOURCETHREAD'] = 'True'
 
         t = SourcesThread()
