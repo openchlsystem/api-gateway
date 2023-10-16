@@ -2,7 +2,6 @@ from django.apps import AppConfig
 import os,base64,requests,time
 import datetime
 import locale,random,string
-from django.contrib.sessions.models import Session
 from django.utils import timezone
 from holla import settings,hollachoices as HC
 
@@ -16,7 +15,7 @@ class SourcesThread():
             case = {
                     "chat_sender": case.incident_reported_by,
                     "chat_receiver": "",
-                    "chat_message": str(base64.b64encode(str(case).encode())),
+                    "chat_message": base64.b64encode(str(case).encode()),
                     "chat_session": HC.getRandomString(),
                     "chat_dump": case,
                     "chat_response": "",
