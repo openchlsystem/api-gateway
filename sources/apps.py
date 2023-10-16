@@ -1,6 +1,104 @@
 from django.apps import AppConfig
+import os,base64,requests,time
+import datetime
+import locale,random,string
+from django.contrib.sessions.models import Session
+from django.utils import timezone
+from holla import settings,hollachoices as HC
 
+class SourcesThread():
+    def run(self):
+        from models import SafePal
+
+        cases = list(SafePal.objects.filter(chl_case_id=0).values())
+
+        for case in cases:
+            case = {
+                    "chat_sender": case.incident_reported_by,
+                    "chat_receiver": "",
+                    "chat_message": str(base64.b64encode(str(case).encode())),
+                    "chat_session": HC.getRandomString(),
+                    "chat_dump": case,
+                    "chat_response": "",
+                    "chat_source": 'INBOX',
+                    "chat_channel": 'safepal',
+                    "id":case.id
+                }
+            
+            sent = self.sendtohelpline(case)
+
+    def sendtohelpline(self,chat_data):
+        from models import SafePal
+        # send chat to helpline
+        caseid=False
+        token = False
+        try:
+
+            headers = {
+                "authorization":"Basic %s" % settings.HELPLINE_TOKEN,
+                "accept": "*/*"
+                }
+
+            response = requests.post(settings.HELPLINE_BASE,headers=headers)
+            json_response = response.json()
+
+            # if it failed to get token, return
+            if json_response.get('errors',False):
+                return "Helpline chat token error: %s " % json_response
+            
+            token = json_response["ss"][0][0]
+
+            # If the response was successful, no Exception will be raised
+            response.raise_for_status()
+        except Exception as err:
+            print(f'Other token error occurred: {err}') 
+            return f'Other token error occurred: {err}'
+        else:
+            print('Token Success!')
+
+        if token:
+            try:
+                tm = time.mktime(datetime.now().timetuple())
+                chat = {
+                    "channel":chat_data.get('chat_channel'),
+                    "from":chat_data.get('chat_sender'),
+                    "message":chat_data.get('chat_message').decode(),
+                    "timestamp":tm,
+                    "session_id":chat_data.get('chat_session'),
+                    "message_id":chat_data.get('id')
+                }
+                
+                headers = {"Authorization":"Bearer %s" % token,'Content-Type':'application/json' }
+
+                response = requests.post('%smsg/' % settings.HELPLINE_BASE, json=chat,headers=headers)
+                
+                json_response = response.json()
+                print("Helpline chat response: %s " % json_response)
+                # if it failed to create chat, return
+                if json_response.get('errors',False):
+                    return "Helpline chat error: %s " % json_response
+                # If the response was successful, no Exception will be raised
+                response.raise_for_status()
+
+                case = SafePal.objects.get(pk=chat_data.id)
+                print("THE CASE: %s " % json_response)
+                case.chl_case_id = response.get('case')
+            except Exception as err:
+                print(f'Other helpline chat error occurred: {err}') 
+                return f'Other helpline chat error occurred: {err}'
+        return caseid
 
 class SourcesConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'sources'
+
+    def ready(self):
+        run_once = os.environ.get('SOURCETHREAD',False)         
+        if run_once:
+            return
+
+        os.environ['SOURCETHREAD'] = 'True'
+
+        t = SourcesThread()
+        t.daemon = True
+        t.start()

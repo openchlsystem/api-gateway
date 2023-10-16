@@ -18,7 +18,6 @@ from holla import settings,hollachoices as HC
 from rest_framework.authentication import TokenAuthentication,SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-
 class UserViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows users to be viewed or edited.
@@ -97,6 +96,7 @@ class SafePalViewSet(viewsets.ViewSet):
             if serializer.is_valid():
                 case = SafePal.objects.create(**serializer.validated_data)
                 cc = 'Successfully Created' #self.helpline_case(case)
+                """
                 message = {
                     "chat_sender": request.data.get('incident_reported_by'),
                     "chat_receiver": "",
@@ -109,6 +109,7 @@ class SafePalViewSet(viewsets.ViewSet):
                     "id":case.id
                 }
                 self.send_to_helpline(message)
+                """
                 return Response({'status':'Success','message':'%s ' % cc}, status=status.HTTP_201_CREATED)
 
             #raise Exception("DEBUG")

@@ -158,14 +158,18 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
-
 MEDIA_URL = '/media/'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-try:    
+def getRandomString(N=10):
+    ran_str = ''.join(random.choices(string.ascii_uppercase +
+                            string.digits, k = N))
+
+try:
     from holla.localsettings import *
 except ImportError as e:
     print(e)
