@@ -80,7 +80,7 @@ class SourcesThread(Thread):
                 # If the response was successful, no Exception will be raised
                 response.raise_for_status()
                 case = SafePal.objects.get(pk=chat_data.get('id'))
-                case.chl_case_id = response.get('messages')[0][0]
+                case.chl_case_id = response.messages[0][0]
                 case.save()
             except Exception as err:
                 print(f'Other helpline chat error occurred: {err}') 
