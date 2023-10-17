@@ -13,7 +13,7 @@ class SourcesThread(Thread):
         while True:
             cases = list(SafePal.objects.filter(chl_case_id="").values())
             print("THE CASE: %s " % cases)
-            for case in cases:
+            for case in cases.items():
                 print("THE CASE: %s " % case)
                 case = {
                         "chat_sender": case.get('survivor_contact_phone_number'),
