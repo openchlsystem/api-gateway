@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 from threading import Thread
 import os,base64,requests,time
-import datetime
+from datetime import datetime
 import locale,random,string
 from django.utils import timezone
 from holla import settings,hollachoices as HC
@@ -11,11 +11,11 @@ class SourcesThread(Thread):
         from sources.models import SafePal
 
         while True:
-            cases = list(SafePal.objects.filter(chl_case_id=0).values())
+            cases = list(SafePal.objects.filter(chl_case_id="").values())
 
             for case in cases:
                 case = {
-                        "chat_sender": case.incident_reported_by,
+                        "chat_sender": case.survivor_contact_phone_number,
                         "chat_receiver": "",
                         "chat_message": base64.b64encode(str(case).encode()),
                         "chat_session": HC.getRandomString(),
