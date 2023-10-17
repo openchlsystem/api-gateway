@@ -20,7 +20,7 @@ class SourcesThread(Thread):
                         "chat_receiver": "",
                         "chat_message": base64.b64encode(str(case).encode()),
                         "chat_session": HC.getRandomString(),
-                        "chat_dump": list(case),
+                        "chat_dump": case,
                         "chat_response": "",
                         "chat_source": 'INBOX',
                         "chat_channel": 'safepal',
