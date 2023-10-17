@@ -65,7 +65,7 @@ class SourcesThread(Thread):
                     "message":chat_data.get('chat_message').decode(),
                     "timestamp":tm,
                     "session_id":chat_data.get('chat_session'),
-                    "message_id":chat_data.get('id')
+                    "message_id":chat_data['id']
                 }
                 
                 headers = {"Authorization":"Bearer %s" % token,'Content-Type':'application/json' }
@@ -80,6 +80,7 @@ class SourcesThread(Thread):
                 # If the response was successful, no Exception will be raised
                 response.raise_for_status()
 
+                print("THE CASE: %s " % json_response)
                 case = SafePal.objects.get(pk=chat_data.get('id'))
                 print("THE CASE: %s " % json_response)
                 case.chl_case_id = response['messages'][0][0]
