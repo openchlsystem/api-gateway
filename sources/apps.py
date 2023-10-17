@@ -29,7 +29,7 @@ class SourcesThread(Thread):
                 sent = self.sendtohelpline(case)
 
     def sendtohelpline(self,chat_data):
-        from models import SafePal
+        from sources.models import SafePal
         # send chat to helpline
         caseid=False
         token = False
