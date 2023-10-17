@@ -14,7 +14,7 @@ class SourcesThread(Thread):
             cases = list(SafePal.objects.filter(chl_case_id="").values())
             print("THE CASE: %s " % cases)
             for case in cases:
-                print("THE CASE: %s " % case.get('survivor_contact_phone_number'))
+                print("THE CAS EID: %s " % case.get('id'))
                 case = {
                         "chat_sender": case.get('survivor_contact_phone_number'),
                         "chat_receiver": "",
@@ -84,11 +84,11 @@ class SourcesThread(Thread):
 
                 case = SafePal.objects.get(pk=chat_data.id)
                 print("THE CASE: %s " % json_response)
-                case.chl_case_id = response.get('case')
+                case.chl_case_id = response['messages'][0][0]
+                case.save()
             except Exception as err:
                 print(f'Other helpline chat error occurred: {err}') 
                 return f'Other helpline chat error occurred: {err}'
-        return caseid
 
 class SourcesConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
