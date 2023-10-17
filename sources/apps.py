@@ -11,6 +11,7 @@ class SourcesThread(Thread):
         from sources.models import SafePal
 
         while True:
+            print("TRUTH")
             cases = list(SafePal.objects.filter(chl_case_id="").values())
             for case in cases:
                 case = {
