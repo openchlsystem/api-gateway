@@ -15,7 +15,7 @@ class SourcesThread(Thread):
 
             for case in cases:
                 case = {
-                        "chat_sender": case.survivor_contact_phone_number,
+                        "chat_sender": case.get('survivor_contact_phone_number'),
                         "chat_receiver": "",
                         "chat_message": base64.b64encode(str(case).encode()),
                         "chat_session": HC.getRandomString(),
@@ -23,7 +23,7 @@ class SourcesThread(Thread):
                         "chat_response": "",
                         "chat_source": 'INBOX',
                         "chat_channel": 'safepal',
-                        "id":case.id
+                        "id":case.get('id')
                     }
                 print("THE CASE: %s " % case)
                 sent = self.sendtohelpline(case)
