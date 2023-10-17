@@ -23,9 +23,9 @@ class SourcesThread(Thread):
                         "chat_response": "",
                         "chat_source": 'INBOX',
                         "chat_channel": 'safepal',
-                        "id":case.get('id')
+                        "id":case.id
                     }
-                print("THE CASE: %s " % case)
+                print("THE CASE: %s " % case.id)
                 sent = self.sendtohelpline(case)
 
     def sendtohelpline(self,chat_data):
