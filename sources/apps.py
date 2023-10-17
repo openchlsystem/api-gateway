@@ -13,7 +13,6 @@ class SourcesThread(Thread):
         while True:
             cases = list(SafePal.objects.filter(chl_case_id="").values())
             for case in cases:
-                print("THE CAS EID: %s " % case)
                 case = {
                         "chat_sender": case.get('survivor_contact_phone_number'),
                         "chat_receiver": "",
@@ -25,7 +24,7 @@ class SourcesThread(Thread):
                         "chat_channel": 'safepal',
                         "id":case['id']
                     }
-                print("THE CASE: %s " % case.get('id'))
+                
                 sent = self.sendtohelpline(case)
 
     def sendtohelpline(self,chat_data):
@@ -81,7 +80,7 @@ class SourcesThread(Thread):
                 # If the response was successful, no Exception will be raised
                 response.raise_for_status()
 
-                case = SafePal.objects.get(pk=chat_data.id)
+                case = SafePal.objects.get(pk=chat_data.get('id'))
                 print("THE CASE: %s " % json_response)
                 case.chl_case_id = response['messages'][0][0]
                 case.save()
