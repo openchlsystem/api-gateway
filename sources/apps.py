@@ -11,7 +11,7 @@ class SourcesThread(Thread):
         from sources.models import SafePal
 
         while True:
-            cases = list(SafePal.objects.filter(chl_case_id="").values())
+            cases = list(SafePal.objects.filter(chl_case_id="").values('id', 'incident_report_id', 'survivor_name', 'survivor_gender','survivor_contact_phone_number','survivor_contact_email', 'survivor_age', 'unique_case_number','incident_location','incident_date_and_time','incident_type','incident_description','incident_reported_by','number_of_perpetrators','perpetrator_name','perpetrator_gender','perpetrator_estimated_age','perpetrator_relationship','perpetrator_location','date_of_interview_with_cso','chl_status','chl_case_id', 'chl_user_id'))
             for case in cases:
                 case = {
                         "chat_sender": case.get('survivor_contact_phone_number'),
