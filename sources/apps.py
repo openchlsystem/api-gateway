@@ -20,8 +20,8 @@ class SourcesThread(Thread):
                         "chat_session": HC.getRandomString(),
                         "chat_dump": case,
                         "chat_response": "",
-                        "chat_source": 'INBOX',
-                        "chat_channel": 'safepal',
+                        "chat_source": "INBOX",
+                        "chat_channel": "safepal",
                         "id":case['id']
                     }
                 
