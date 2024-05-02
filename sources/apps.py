@@ -7,6 +7,9 @@ from django.utils import timezone
 from holla import settings,hollachoices as HC
 
 class SourcesThread(Thread):
+    """
+    Thread to provide data push for integrations on the sources
+    """
     def run(self):
         from sources.models import SafePal
 
@@ -85,6 +88,90 @@ class SourcesThread(Thread):
             except Exception as err:
                 print(f'Other helpline chat error occurred: {err}') 
                 return f'Other helpline chat error occurred: {err}'
+
+    def send_sms(self):
+        from sources.models import SMS
+        try:
+            messages = SMS.objects.filter(sms_direction='OUTBOX',sms_status=0)
+
+            if len(messages) > 0:
+                for message in messages:
+                    # send sms 
+                    data =	{
+                        'recipients':message.sms_phone,
+                        'message'	:message.sms_text,	
+                        'sender':settings.SMS_ID,
+                        'dlrurl':'https://call.solektra.rw/api/sources/sms/'
+                    }
+                    response = requests.post('https://www.intouchsms.co.rw/api/sendsms/.json',data,auth=(settings.SMS_USN,settings.SMS_PASS))
+                    json_response = response.json()
+                    ms_status = {'P':4,'D':5,'Q':2,'E':3,'S':1}
+                    
+                    if int(response.status_code) == 200:
+                        if(json_response.get('success')):
+                            message.sms_status = 1
+                            message.sms_sent_status = ms_status.get(str(json_response.get('details')[0].get('status')))
+                            message.sms_cost = json_response.get('details')[0].get('cost')
+                            message.sms_response = json_response
+                            message.sms_messageid = json_response.get('details')[0].get('messageid')
+                            message.save()
+                        else:
+                            # print(json_response.get('response')[0])
+                            message.sms_status = 1
+                            # if not json_response.get('response')[0].get('errors').get('error').lower() == 'balance':
+                            #     message.sms_sent_status = 3
+                            message.sms_response = json_response
+                            message.save()
+                    else:
+                        # message.sms_status = 1
+                        message.sms_response = json_response
+                        message.save()
+
+                # update sms status
+            # 
+        except Exception as e:
+            print("Error Sending SMS: %s " % e.args[0])
+            
+    def send_whatsapp(self):
+        from sources.models import WhatsApp
+        try:
+            messages = WhatsApp.objects.filter(wa_direction='OUTBOX',wa_status="DRAFT")
+            
+            if len(messages) > 0:
+                for message in messages:
+                    data =	{
+                        "messaging_product": "whatsapp",
+                        "recipient_type": "individual",
+                        "to": message.wa_contact,
+                        "type": "text",
+                        "text":{
+                            "preview_url": "false",
+                            "body": message.wa_message
+                        }
+                    }
+
+                    header = {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer %s " % settings.FB_TOKEN
+                    }
+                    
+                    response = requests.post('https://graph.facebook.com/v18.0/%s/messages' % settings.WA_PHONE_ID,json=data,headers=header)
+                    json_response = response.json()
+                    
+                    if int(response.status_code) == 200:
+                        message.wa_status = 'SENT'
+                        message.wa_unique = json_response.get('messages')[0].get("id")
+                        message.save()
+                    else:
+                        message.wa_status = 'FAILED'
+                        message.wa_response = json_response
+                        message.save()
+
+                # update sms status
+            # 
+        except Exception as e:
+            print("Error Sending SMS: %s " % e.args[0])
+
 
 class SourcesConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'

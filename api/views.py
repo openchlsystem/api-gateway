@@ -20,7 +20,7 @@ from rest_framework.permissions import IsAuthenticated
 
 class UserViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows users to be viewed or edited.
+    API endpoint that allows user actions such as listing
     """
     queryset = User.objects.all() #.order_by('-date_joined')
     serializer_class = UserSerializer
@@ -143,10 +143,8 @@ class SafePalViewSet(viewsets.ViewSet):
             # If the response was successful, no Exception will be raised
             response.raise_for_status()
         except HTTPError as http_err:
-            # print(f'HTTP token error: {http_err}')
             return f'HTTP token error: {http_err}'
         except Exception as err:
-            # print(f'Other token error occurred: {err}') 
             return f'Other token error occurred: {err}'
         else:
             print('Token Success!')
