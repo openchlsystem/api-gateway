@@ -1,13 +1,12 @@
 from django.contrib.auth.models import Group
 from users.models import User
-from sources.models import Chats,Facebook, Web, Twitter,WhatsApp, SafePal
+from sources.models import Chats,Facebook, Web, Twitter,WhatsApp, SafePal,SMS,Conversations,Contacts
 from rest_framework import serializers
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
         fields = ['url', 'username', 'email','firstname','lastname']
-
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -27,6 +26,21 @@ class WebSerializer(serializers.ModelSerializer):
 class FacebookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Facebook
+        fields = ("__all__")
+
+class SmsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SMS
+        fields = ("__all__")
+
+class ConversationsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Conversations
+        fields = ("__all__")
+
+class ContactsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contacts
         fields = ("__all__")
 
 class WhatsAppSerializer(serializers.ModelSerializer):

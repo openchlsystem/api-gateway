@@ -5,11 +5,13 @@ from django.contrib.auth.models import Group
 from django.http import JsonResponse
 from rest_framework import viewsets,status
 from users.models import User
-from sources.models import Chats,Facebook, Web, Twitter,WhatsApp, SafePal
+from sources.models import Chats,Facebook, Web, Twitter,WhatsApp, SafePal,Contacts,Conversations, \
+BotMessages,SMS
 from rest_framework import permissions
 from rest_framework.response import Response
 from api.serializers import UserSerializer, GroupSerializer, ChatSerializer, FacebookSerializer, \
-    TwitterSerializer, WebSerializer,WhatsAppSerializer, SafePalSerializer
+    TwitterSerializer, WebSerializer,WhatsAppSerializer, SafePalSerializer,SmsSerializer,\
+        ConversationsSerializer,ContactsSerializer
 import uuid,base64
 import requests,time,ssl
 from datetime import datetime
@@ -1339,6 +1341,128 @@ class FacebookViewSetBot(viewsets.ViewSet):
         return chat
 
 
+class SmsViewSet(viewsets.ViewSet):
+    queryset = Web.objects.all().order_by('-id')
+    serializer_class = SmsSerializer
+
+    def list(self, request,pk=False, format=None):
+        """
+        Return a list of all sources.
+        """
+        if request.GET.get('messageid',False):
+            try:
+                ms_status = {'P':4,'D':5,'Q':2,'E':3,'S':1}
+                q = SMS.objects.filter(sms_messageid=str(request.GET.get('messageid'))).last()
+                
+                q.sms_sent_status = ms_status.get(request.GET.get('status'))
+                q.sms_status = ms_status.get(request.GET.get('status'))
+
+                q.save()
+                return Response({'status':'success','message':'%s: Message status update successfully.' % request.GET.get('messageid')},status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({'status':'error','message':'%s: Could not update sms status. %s' % (request.GET.get('messageid'),e.args[0])},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            if pk:
+                queryset = SMS.objects.get(pk=pk)
+                serializer_class = SmsSerializer(queryset)
+            else:
+                queryset = SMS.objects.all().order_by('-id')
+                serializer_class = SmsSerializer(queryset, many=True)
+
+            return Response(serializer_class.data)
+
+    def create(self, request):
+        
+        posted = request.data
+        posted['sms_status'] = 6
+        
+        posted['sms_direction'] = 'INBOX'
+
+        serializer = self.serializer_class(data=posted)
+
+        if serializer.is_valid():
+            sms = SMS.objects.create(**serializer.validated_data)
+
+            # get the response
+            res = self.process_message({'sms_phone':request.data.get("sms_phone"),'sms_text':request.data.get("sms_text")},sms.id)
+            return Response(res, status=status.HTTP_201_CREATED)
+
+        return Response({'status': 'Bad Request %s ' % res,
+                         'message': serializer.errors},
+                          status=status.HTTP_400_BAD_REQUEST)
+    def process_message(self,dat,smsid):
+        try:
+            phone = dat.get('sms_phone') # request.data.sms_phone
+            text = dat.get('sms_text') #request.data.sms_message
+
+            contact = Contacts.objects.filter(cont_address=phone).first()
+            if not contact:
+                contact = Contacts()
+                contact.cont_address = phone
+                contact.save()
+            
+            sms = SMS.objects.get(pk=smsid)
+
+            conversation = Conversations.objects.filter(conv_person=contact.id,conv_closed=False).first()
+            message = 'We have come to the end of the converation, reply with 1 to continue to agent menu'
+
+            if not conversation:
+                botmessage = False
+
+                conversation = Conversations()
+                conversation.conv_person = contact
+                # conversation.conv_stage = null
+                    
+                conversation.conv_closed = False
+                conversation.conv_stage = BotMessages.objects.all().first()
+                conversation.save()
+
+                sms.sms_conv = conversation
+                sms.save()
+
+                try:
+                    botmessage = BotMessages.objects.filter(bot_parent__isnull=True).first()
+
+                    if botmessage and not botmessage.bot_ischoice:
+                        conversation.conv_next= botmessage.bot_next
+                    conversation.save()
+                except Exception as e:
+                    print("Message Error: %s " % e.args[0])
+
+                if not botmessage:
+                    sms = SMS()
+                    sms.sms_text = 'Hi, this service is currently not available, please call 116 or find us on other channels, thank you.'
+                    
+                    sms.sms_conv = conversation
+                    sms.sms_phone = conversation.conv_person.cont_phone
+                    sms.save()
+                    return {'status':False,'message':sms.sms_text}
+                            
+            else:
+                sms.sms_conv = conversation
+                # sms.sms_phone = conversation.conv_person.cont_phone
+                sms.save()
+
+                if conversation.conv_next or not str(text).isdigit():
+                    botmessage = BotMessages.objects.get(pk=conversation.conv_next)
+                else:
+                    botmessage = BotMessages.objects.filter(bot_parent=conversation.conv_stage,bot_selector=text).first()
+            
+            if botmessage:
+                message = botmessage.bot_message
+            
+            
+            sms = SMS()
+            sms.sms_text = message
+            sms.sms_conv = conversation
+            sms.sms_phone = phone
+
+            sms.save()
+
+            return {"conv":conversation.id,"message":message}
+        except Exception as e:
+            return {"conv":False,"message":"Could not complete: %s " % e.args[0]}
+
 class TwitterViewSet(viewsets.ViewSet):
 
     queryset = Twitter.objects.all().order_by('-id')
@@ -1391,4 +1515,93 @@ class TwitterViewSet(viewsets.ViewSet):
         return Response({'status': 'Bad Request %s ' % request.data,
                          'message': "Could not process request"},
                           status=status.HTTP_400_BAD_REQUEST)
+    
 
+class ConversationsViewSet(viewsets.ViewSet):
+
+    queryset = Twitter.objects.all().order_by('-id')
+    serializer_class = TwitterSerializer
+    
+    # authentication_classes = (TokenAuthentication,)
+    # permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request,pk=False,format=None):
+        """
+        Return a list of all sources.
+        """
+        
+        if pk:
+            queryset = Conversations.objects.get(pk=pk)
+            serializer_class = ConversationsSerializer(queryset)
+        else:
+            queryset = Conversations.objects.all().order_by('-id')
+            serializer_class = ConversationsSerializer(queryset, many=True)
+
+        return Response(serializer_class.data)
+
+    def create(self, request):
+        if request.data.get('object') == 'page':
+            posted = request.data.get('entry')[0].get('messaging')[0]
+            posted = {
+                "tw_unique":posted.get('message').get('mid'),
+                "tw_message":posted.get('message').get('text'),
+                "tw_dump":request.data,
+                "tw_from":posted.get('sender').get('id'),
+                "tw_to":posted.get('recipient').get('id')
+            }
+
+            # {'object': 'page', 'entry': [{'id': '379177569599649', 'time': 1662798923038, 'messaging': [{'sender': {'id': '3412749322156758'}, 'recipient': {'id': '379177569599649'}, 'timestamp': 1662795371999, 'message': {'mid': 'm_NEf-F398IC5LSB1kVK15fjw9B9-lqkmk2Y-ySamD-Prqj1PJ5wVhwwf7Xg0BwqP8D6BGM5-mZ9BfduKDjTAApw', 'text': 'Sisi ndio hao', 'nlp': {'intents': [], 'entities': {}, 'traits': {'witgreetings': [{'id': '5900cc2d-41b7-45b2-b21f-b950d3ae3c5c', 'value': 'true', 'confidence': 0.8493}]}, 'detected_locales': [{'locale': 'sw_KE', 'confidence': 1}]}}}]}]} 
+            serializer = self.serializer_class(data=posted)
+
+            if serializer.is_valid():
+                conv = Conversations.objects.create(**serializer.validated_data)
+                
+            return Response(serializer.validated_data, status=status.HTTP_200_OK) #1_CREATED)
+
+        return Response({'status': 'Bad Request %s ' % request.data,
+                         'message': "Could not process request"},
+                          status=status.HTTP_400_BAD_REQUEST)
+    
+class ContactsViewSet(viewsets.ViewSet):
+
+    queryset = Contacts.objects.all().order_by('-id')
+    serializer_class = ContactsSerializer
+    
+    # authentication_classes = (TokenAuthentication,)
+    # permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request,pk=False, format=None):
+        """
+        Return a list of all sources.
+        """
+        if pk:
+            queryset = Contacts.objects.get(pk=pk)
+            serializer_class = ContactsSerializer(queryset)
+        else:
+            queryset = Contacts.objects.all().order_by('-id')
+            serializer_class = ContactsSerializer(queryset, many=True)
+
+        return Response(serializer_class.data)
+
+    def create(self, request):
+        if request.data.get('object') == 'page':
+            posted = request.data.get('entry')[0].get('messaging')[0]
+            posted = {
+                "tw_unique":posted.get('message').get('mid'),
+                "tw_message":posted.get('message').get('text'),
+                "tw_dump":request.data,
+                "tw_from":posted.get('sender').get('id'),
+                "tw_to":posted.get('recipient').get('id')
+            }
+
+            # {'object': 'page', 'entry': [{'id': '379177569599649', 'time': 1662798923038, 'messaging': [{'sender': {'id': '3412749322156758'}, 'recipient': {'id': '379177569599649'}, 'timestamp': 1662795371999, 'message': {'mid': 'm_NEf-F398IC5LSB1kVK15fjw9B9-lqkmk2Y-ySamD-Prqj1PJ5wVhwwf7Xg0BwqP8D6BGM5-mZ9BfduKDjTAApw', 'text': 'Sisi ndio hao', 'nlp': {'intents': [], 'entities': {}, 'traits': {'witgreetings': [{'id': '5900cc2d-41b7-45b2-b21f-b950d3ae3c5c', 'value': 'true', 'confidence': 0.8493}]}, 'detected_locales': [{'locale': 'sw_KE', 'confidence': 1}]}}}]}]} 
+            serializer = self.serializer_class(data=posted)
+
+            if serializer.is_valid():
+                cont = Contacts.objects.create(**serializer.validated_data)
+                
+            return Response(serializer.validated_data, status=status.HTTP_200_OK) #1_CREATED)
+
+        return Response({'status': 'Bad Request %s ' % request.data,
+                         'message': "Could not process request"},
+                          status=status.HTTP_400_BAD_REQUEST)

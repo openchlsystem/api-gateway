@@ -8,13 +8,13 @@ from holla import hollachoices as HC
 
 # Create your models here.
 
-class SMS(models.Model):
-    sms_text = models.TextField()
-    sms_phone = models.IntegerField()
-    sms_status = models.CharField(max_length=100)
-    sms_sent_status = models.CharField(max_length=100)
-    sms_schedule_date = models.DateTimeField(default=timezone.now)
-    sms_cost = models.IntegerField()
+# class SMS(models.Model):
+#     sms_text = models.TextField()
+#     sms_phone = models.IntegerField()
+#     sms_status = models.CharField(max_length=100)
+#     sms_sent_status = models.CharField(max_length=100)
+#     sms_schedule_date = models.DateTimeField(default=timezone.now)
+#     sms_cost = models.IntegerField()
 
 class Chats(models.Model):
     chat_sender = models.CharField(max_length=100,blank=True)
@@ -73,16 +73,31 @@ class Web(models.Model):
 
 class Contacts(models.Model):
     cont_name = models.CharField(max_length=100)
-    cont_phone = models.CharField(max_length=20)
-    cont_email = models.CharField(max_length=200)
-    cont_physical_address = models.CharField(max_length=200)
-    cont_postal_address = models.CharField(max_length=100)
+    cont_oname = models.CharField(max_length=100)
+    cont_phone = models.CharField(max_length=20,null=True,default="")
+    cont_address = models.CharField(max_length=200,null=True,default="")
+    cont_physical_address = models.CharField(max_length=200,null=True,default="")
+    cont_postal_address = models.CharField(max_length=100,null=True,default="")
     cont_postal_code = models.IntegerField()
-    cont_city = models.CharField(max_length=100)
+    cont_city = models.CharField(max_length=100,null=True,default="")
     #cont_country = models.ForeignKey(Countries,on_delete=models.CASCADE)
     #cont_member = models.ForeignKey(Persons,on_delete=models.CASCADE)
-    cont_group = models.CharField(max_length=200)
+    cont_group = models.CharField(max_length=200,null=True,default="")
+    cont_status = models.IntegerField(default=1)
 
+class Contacts(models.Model):
+    cont_name = models.CharField(max_length=100)
+    cont_oname = models.CharField(max_length=100)
+    cont_phone = models.CharField(max_length=20)
+    cont_address = models.CharField(max_length=200)
+    # cont_physical_address = models.CharField(max_length=200)
+    # cont_postal_address = models.CharField(max_length=100)
+    # cont_postal_code = models.IntegerField()
+    # cont_city = models.CharField(max_length=100)
+    # cont_country = models.ForeignKey(Countries,on_delete=models.CASCADE)
+    # cont_member = models.ForeignKey(Persons,on_delete=models.CASCADE)
+    # cont_group = models.CharField(max_length=200)
+    cont_status = models.IntegerField(default=1)
 
 class Emails(models.Model):
     mail_body = models.TextField()
@@ -149,5 +164,33 @@ class SafePal(models.Model):
     chl_case_id = models.CharField(max_length=200,blank=True,default="")
     chl_time = models.DateTimeField(auto_now_add=True)
     chl_user_id = models.CharField(max_length=200,blank=True,default="")
+
+
+class BotMessages(models.Model):
+    bot_selector = models.IntegerField(null=True)
+    bot_message = models.TextField()
+    bot_parent = models.ForeignKey('self',null=True,related_name='parent_bot',on_delete=models.RESTRICT)
+    bot_ischoice = models.BooleanField(default=True)
+    bot_next = models.ForeignKey('self',null=True,related_name='next_bot',on_delete=models.RESTRICT)
+
+class Conversations(models.Model):
+    conv_person = models.ForeignKey(Contacts,related_name='conversant',on_delete=models.RESTRICT)
+    conv_stage = models.ForeignKey(BotMessages,related_name='botlevel',null=True,on_delete=models.RESTRICT)
+    conv_next = models.ForeignKey(BotMessages,null=True,related_name='botnext',on_delete=models.RESTRICT)
+    conv_response = models.CharField(max_length=200,default="")
+    conv_closed = models.BooleanField(default=False)
+    conv_time = models.DateTimeField(auto_now=True)
+
+class SMS(models.Model):
+    sms_text = models.TextField()
+    sms_phone = models.CharField(max_length=20,default="")
+    sms_direction = models.CharField(max_length=100,default='OUTBOX')
+    sms_status = models.IntegerField(default=0)
+    sms_sent_status = models.CharField(max_length=100,null=True,default="")
+    sms_schedule_date = models.DateTimeField(default=timezone.now)
+    sms_cost = models.IntegerField(default=0)
+    sms_conv = models.ForeignKey(Conversations,related_name='conversation',null=True,on_delete=models.RESTRICT)
+    sms_response = models.JSONField(default=dict)
+    sms_messageid = models.CharField(max_length=100,default="")
 
 
